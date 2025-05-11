@@ -3,55 +3,29 @@ import React, { useState, useRef, useEffect } from "react";
 import ChatMessage, { Message, MessageType } from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import { cn } from "@/lib/utils";
+import ModelSelector from "./ModelSelector";
+import { toast } from "sonner";
 
 interface ChatContainerProps {
   className?: string;
 }
 
-// Sample responses for different models
-const modelResponses: Record<string, (prompt: string) => string> = {
-  "llama-4": (prompt: string) => {
-    // Make more specific and detailed
-    return `${prompt.trim()}\n\nTo make this more effective for Llama 4, I've enhanced your prompt with specific details, context, and clear expectations:
-
-"${prompt.trim()}, providing detailed analysis with step-by-step reasoning. Consider multiple perspectives and cite specific examples or evidence. Break down complex concepts into clear explanations, and ensure your response has logical flow with clear section headings where appropriate. Prioritize accuracy over length and conclude with a summary of key points."`;
-  },
-  "claude": (prompt: string) => {
-    // Make more conversational and add examples
-    return `I've optimized your prompt for Claude's conversational style:
-
-"${prompt.trim()} 
-
-Please approach this thoughtfully, considering various angles. Feel free to think step-by-step, and provide examples to illustrate your points. If relevant, consider both advantages and disadvantages. Make your explanation accessible to someone without specialized knowledge in this area."`;
-  },
-  "chatgpt": (prompt: string) => {
-    // Add structure and formatting instructions
-    return `Enhanced for ChatGPT:
-
-"${prompt.trim()}
-
-Please structure your response with:
-1. A brief introduction to the topic
-2. Main analysis with 3-4 key points
-3. Practical applications or examples
-4. A concise conclusion
-
-Use markdown formatting where appropriate with headers, bullet points, and occasional bold text for emphasis."`;
-  },
-  "mistral": (prompt: string) => {
-    // Technical and concise
-    return `Optimized for Mistral's technical capabilities:
-
-"I need a technically precise response to: ${prompt.trim()}
-
-Prioritize factual accuracy and technical depth. Include relevant technical terminology where appropriate. Focus on providing a comprehensive but concise analysis with logical structure. If calculations or algorithms are relevant, please include them."`;
-  }
+// Model-specific paths to instruction files
+const modelInstructions: Record<string, string> = {
+  "llama-4": "/src/instructions/llama-4.md",
+  "claude": "/src/instructions/claude.md",
+  "chatgpt": "/src/instructions/chatgpt.md",
+  "mistral": "/src/instructions/mistral.md",
 };
 
 const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState("llama-4");
+  const [groqApiKey, setGroqApiKey] = useState<string>(() => {
+    return localStorage.getItem("groqApiKey") || "";
+  });
+  const [showApiKeyInput, setShowApiKeyInput] = useState(!localStorage.getItem("groqApiKey"));
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom of chat
@@ -59,7 +33,20 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = (content: string) => {
+  // Save API key to localStorage when it changes
+  useEffect(() => {
+    if (groqApiKey) {
+      localStorage.setItem("groqApiKey", groqApiKey);
+    }
+  }, [groqApiKey]);
+
+  const handleSendMessage = async (content: string) => {
+    if (!groqApiKey) {
+      setShowApiKeyInput(true);
+      toast.error("Please enter your Groq API key first");
+      return;
+    }
+    
     // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -71,19 +58,90 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
     setMessages(prev => [...prev, userMessage]);
     setLoading(true);
     
-    // Simulate API delay
-    setTimeout(() => {
+    try {
+      const enhancedPrompt = await enhancePrompt(content, selectedModel);
+      
       const enhancedMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
-        content: modelResponses[selectedModel](content),
+        content: enhancedPrompt,
         isEnhanced: true,
         timestamp: new Date(),
       };
       
       setMessages(prev => [...prev, enhancedMessage]);
+    } catch (error) {
+      console.error("Error enhancing prompt:", error);
+      toast.error("Failed to enhance prompt. Please try again.");
+      
+      // Show a fallback message
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: "assistant",
+        content: "Sorry, I couldn't enhance your prompt. Please check your API key or try again later.",
+        isEnhanced: false,
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
+  };
+
+  const enhancePrompt = async (prompt: string, model: string): Promise<string> => {
+    // Format system message based on the selected model
+    const systemPrompt = `You are an expert prompt engineer for the ${model === "llama-4" ? "Groq Llama 4" : 
+      model === "claude" ? "Claude" : 
+      model === "chatgpt" ? "ChatGPT" : 
+      "Mistral AI"} model. 
+      Your task is to enhance the user's prompt to get better results from this specific model.
+      Return only the enhanced prompt without any explanations or additional text.`;
+
+    const userPrompt = `Please enhance this prompt for the ${model === "llama-4" ? "Groq Llama 4" : 
+      model === "claude" ? "Claude" : 
+      model === "chatgpt" ? "ChatGPT" : 
+      "Mistral AI"} model: "${prompt}"`;
+
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${groqApiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "llama-3-8b-8192",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 2048
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || "API request failed");
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error("Error calling Groq API:", error);
+      throw error;
+    }
+  };
+
+  const handleSaveApiKey = () => {
+    if (groqApiKey) {
+      localStorage.setItem("groqApiKey", groqApiKey);
+      setShowApiKeyInput(false);
+      toast.success("API key saved successfully");
+    } else {
+      toast.error("Please enter a valid API key");
+    }
   };
 
   return (
@@ -91,18 +149,46 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
       <div className="flex justify-between items-center mb-4 px-1">
         <h2 className="text-lg font-medium">Enhance Your Prompts</h2>
         <div className="flex gap-2">
-          <select 
-            value={selectedModel}
-            onChange={(e) => setSelectedModel(e.target.value)}
-            className="bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none"
-          >
-            <option value="llama-4">Gruq Llama 4</option>
-            <option value="claude">Claude</option>
-            <option value="chatgpt">ChatGPT</option>
-            <option value="mistral">Mistral AI</option>
-          </select>
+          <ModelSelector 
+            selectedModel={selectedModel}
+            onSelectModel={setSelectedModel}
+          />
         </div>
       </div>
+
+      {showApiKeyInput ? (
+        <div className="p-6 bg-black/30 rounded-lg border border-white/10 mb-4">
+          <h3 className="text-lg font-medium mb-2">Enter your Groq API Key</h3>
+          <p className="text-sm text-white/70 mb-4">
+            To use PromptShift, you need to provide your Groq API key. This will be stored locally in your browser.
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="password"
+              className="flex-1 px-3 py-2 bg-black/50 border border-white/10 rounded-lg text-white outline-none focus:border-promptshift-accent"
+              placeholder="Enter your Groq API key"
+              value={groqApiKey}
+              onChange={(e) => setGroqApiKey(e.target.value)}
+            />
+            <button
+              className="px-4 py-2 bg-promptshift-primary text-white rounded-lg hover:bg-promptshift-accent transition-colors"
+              onClick={handleSaveApiKey}
+            >
+              Save
+            </button>
+          </div>
+          <p className="text-xs text-white/50 mt-2">
+            Don't have a Groq API key? <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-promptshift-accent hover:underline">Get one here</a>.
+          </p>
+        </div>
+      ) : (
+        <button 
+          className="text-xs text-white/50 hover:text-white mb-2 transition-colors self-end"
+          onClick={() => setShowApiKeyInput(true)}
+        >
+          Change API Key
+        </button>
+      )}
 
       <div className="flex-1 overflow-y-auto prompt-chat-scrollbar px-2">
         {messages.length === 0 ? (
