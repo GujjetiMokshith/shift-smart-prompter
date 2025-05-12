@@ -52,19 +52,19 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
   return (
     <div className={cn("relative", className)}>
       <button
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-bolt-card hover:bg-bolt-input border border-white/5 text-sm transition-colors"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#070C18] hover:bg-[#0A1020] border border-white/5 text-sm transition-colors hover-border-glow"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex flex-col items-start">
-          <span className="font-medium text-xs text-white">Target Model:</span>
-          <span className="text-blue-400">{selectedModelData.name}</span>
+          <span className="font-medium text-xs text-white/70">Target Model:</span>
+          <span className="text-blue-500">{selectedModelData.name}</span>
         </div>
         <ChevronDown size={16} className={`text-white/70 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
       
       {isOpen && (
         <div 
-          className="absolute top-full right-0 mt-2 w-64 bg-bolt-card border border-white/5 p-1 z-10 rounded-lg shadow-lg animate-fade-in"
+          className="absolute top-full right-0 mt-2 w-64 bg-[#070C18] border border-white/5 p-1 z-10 rounded-lg shadow-lg animate-fade-in glow-blue-sm"
         >
           <div className="text-xs text-white/70 px-2 py-1">Select target model</div>
           <div className="space-y-1">
@@ -73,7 +73,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
                 key={model.id}
                 className={`w-full flex items-center justify-between p-2 rounded-md text-left text-sm ${
                   selectedModel === model.id
-                    ? "bg-blue-500 text-white"
+                    ? "bg-blue-700 text-white"
                     : "hover:bg-white/5 text-white"
                 } transition-colors`}
                 onClick={() => {

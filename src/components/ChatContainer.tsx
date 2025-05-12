@@ -1,21 +1,17 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import ChatMessage, { Message, MessageType } from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import { cn } from "@/lib/utils";
 import ModelSelector from "./ModelSelector";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import ModelSelectionModal from "./ModelSelectionModal";
+import SettingsModal from "./SettingsModal";
 
 interface ChatContainerProps {
   className?: string;
 }
-
-// Model-specific paths to instruction files
-const modelInstructions: Record<string, string> = {
-  "llama-4": "/src/instructions/llama-4.md",
-  "claude": "/src/instructions/claude.md",
-  "chatgpt": "/src/instructions/chatgpt.md",
-  "mistral": "/src/instructions/mistral.md",
-};
 
 // Fixed Groq API key provided by the app owner
 const GROQ_API_KEY = "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";
@@ -24,6 +20,10 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState("llama-4");
+  const [showModelSelection, setShowModelSelection] = useState(false);
+  const [inputText, setInputText] = useState("");
+  const [isCustomPrompt, setIsCustomPrompt] = useState(false);
+  const [customSystemPrompt, setCustomSystemPrompt] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom of chat
@@ -32,11 +32,21 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
+    if (!content.trim()) return;
+    
+    setInputText("");
+    setShowModelSelection(true);
+  };
+  
+  const proceedWithModel = async (modelId: string) => {
+    setSelectedModel(modelId);
+    setShowModelSelection(false);
+    
     // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
-      content,
+      content: inputText,
       timestamp: new Date(),
     };
     
@@ -44,19 +54,14 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
     setLoading(true);
     
     try {
-      // Generate multiple enhanced prompts
-      const enhancedPrompts = await generateEnhancedPrompts(content, selectedModel);
-      
-      // Select the first prompt as the main one and keep the rest as options
-      const mainPrompt = enhancedPrompts[0];
-      const options = enhancedPrompts.slice(1);
+      // Generate enhanced prompt
+      const enhancedPrompt = await generateEnhancedPrompts(inputText, modelId, isCustomPrompt ? customSystemPrompt : undefined);
       
       const enhancedMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
-        content: mainPrompt,
+        content: enhancedPrompt,
         isEnhanced: true,
-        options: options,
         timestamp: new Date(),
       };
       
@@ -81,18 +86,25 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
     }
   };
 
-  const generateEnhancedPrompts = async (prompt: string, model: string): Promise<string[]> => {
-    // Format system message based on the selected model
-    const systemPrompt = `You are an expert prompt engineer for the ${model === "llama-4" ? "Llama 4" : 
+  const generateEnhancedPrompts = async (
+    prompt: string, 
+    model: string,
+    customPrompt?: string
+  ): Promise<string> => {
+    // Format system message based on the selected model and custom prompt
+    const systemPrompt = customPrompt || `You are an expert prompt engineer for the ${
+      model === "llama-4" ? "Llama 4" : 
       model === "claude" ? "Claude" : 
       model === "chatgpt" ? "ChatGPT" : 
       "Mistral AI"} model. 
       Your task is to enhance the user's prompt to get better results from this specific model.
-      Generate 4 different enhanced versions of the prompt, each with a different approach.
-      The variations should be significantly different from each other to give the user multiple options.
-      Return ONLY the 4 enhanced prompts separated by the delimiter "|||" without any explanations or additional text.`;
+      Generate a significantly enhanced version of the prompt that is detailed, clear, and optimized for this model's strengths.
+      Consider the model's capabilities, limitations, and best practices when enhancing.
+      Return ONLY the enhanced prompt without any explanations or additional text.
+      Make it as detailed and comprehensive as possible - use up to 4000 tokens.`;
 
-    const userPrompt = `Please enhance this prompt for the ${model === "llama-4" ? "Llama 4" : 
+    const userPrompt = `Please enhance this prompt for the ${
+      model === "llama-4" ? "Llama 4" : 
       model === "claude" ? "Claude" : 
       model === "chatgpt" ? "ChatGPT" : 
       "Mistral AI"} model: "${prompt}"`;
@@ -110,8 +122,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt }
           ],
-          temperature: 0.8,
-          max_tokens: 4096
+          temperature: 0.7,
+          max_tokens: 4000
         })
       });
 
@@ -121,48 +133,29 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
       }
 
       const data = await response.json();
-      const content = data.choices[0].message.content;
-      
-      // Split the content by the delimiter to get multiple prompt options
-      const promptOptions = content.split("|||").map(option => option.trim()).filter(Boolean);
-      
-      // Make sure we have at least one option
-      if (promptOptions.length === 0) {
-        return [content]; // Return the full content if no delimiters found
-      }
-      
-      return promptOptions.slice(0, 4); // Return up to 4 options
+      return data.choices[0].message.content;
     } catch (error) {
       console.error("Error calling Groq API:", error);
       throw error;
     }
   };
 
-  const handleSelectOption = (option: string) => {
-    // Replace the last assistant message with the selected option
-    setMessages(prevMessages => {
-      const newMessages = [...prevMessages];
-      const lastAssistantIndex = [...newMessages].reverse().findIndex(m => m.type === "assistant");
-      
-      if (lastAssistantIndex !== -1) {
-        const actualIndex = newMessages.length - 1 - lastAssistantIndex;
-        newMessages[actualIndex] = {
-          ...newMessages[actualIndex],
-          content: option,
-          options: [] // Remove options once one is selected
-        };
-      }
-      
-      return newMessages;
-    });
-    
-    toast.success("Option selected!");
+  const handleInputChange = (text: string) => {
+    setInputText(text);
+  };
+
+  const toggleCustomPrompt = (value: boolean) => {
+    setIsCustomPrompt(value);
+  };
+
+  const updateCustomPrompt = (prompt: string) => {
+    setCustomSystemPrompt(prompt);
   };
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
       <div className="flex justify-between items-center mb-4 px-4 pt-4">
-        <h2 className="text-lg font-medium text-white">Enhance Your Prompts</h2>
+        <h2 className="text-lg font-medium text-gradient-blue">Enhance Your Prompts</h2>
         <ModelSelector 
           selectedModel={selectedModel}
           onSelectModel={setSelectedModel}
@@ -172,31 +165,32 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
       <div className="flex-1 overflow-y-auto prompt-chat-scrollbar px-4 min-h-[300px] max-h-[500px]">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6">
-            <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400">
+            <div className="w-16 h-16 rounded-full bg-blue-700/20 flex items-center justify-center mb-4 glow-blue-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
               </svg>
             </div>
             <h3 className="text-lg font-medium mb-2 text-white">How can I help you today?</h3>
             <p className="text-sm text-white/70 max-w-md">
-              Paste your existing prompt below and I'll enhance it for your selected AI model with multiple options.
+              Paste your existing prompt below and I'll enhance it for your selected AI model.
             </p>
           </div>
         ) : (
           messages.map(message => (
             <ChatMessage 
               key={message.id} 
-              message={message} 
-              onSelectOption={handleSelectOption}
+              message={message}
             />
           ))
         )}
         
         {loading && (
-          <div className="flex items-center space-x-2 p-4">
-            <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
-            <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+          <div className="loading-container">
+            <div className="neo-blur p-8 rounded-2xl flex flex-col items-center">
+              <Loader2 className="loading-spinner" />
+              <p className="mt-4 text-blue-400 font-medium">Enhancing your prompt...</p>
+              <p className="text-xs text-white/50 mt-2">This might take a few seconds</p>
+            </div>
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -204,11 +198,29 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
 
       <div className="p-4">
         <ChatInput 
+          value={inputText}
+          onChange={handleInputChange}
           onSubmit={handleSendMessage}
           disabled={loading}
           placeholder="How can PromptShift help you today?"
         />
       </div>
+      
+      {/* Model Selection Modal */}
+      <ModelSelectionModal 
+        isOpen={showModelSelection} 
+        onClose={() => setShowModelSelection(false)}
+        onSelectModel={proceedWithModel}
+        currentModel={selectedModel}
+      />
+      
+      {/* Settings Modal - Added at bottom left */}
+      <SettingsModal
+        isCustomPrompt={isCustomPrompt}
+        customPrompt={customSystemPrompt}
+        onToggleCustomPrompt={toggleCustomPrompt}
+        onUpdateCustomPrompt={updateCustomPrompt}
+      />
     </div>
   );
 };

@@ -1,7 +1,9 @@
 
 import React from "react";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, FileDown, Maximize2, MinusSquare, PlusSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
+import { toast } from "sonner";
 
 export type MessageType = "user" | "assistant";
 
@@ -20,16 +22,42 @@ interface ChatMessageProps {
   onSelectOption?: (option: string) => void; // Handler for option selection
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, className, onSelectOption }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, className }) => {
   const [copied, setCopied] = React.useState(false);
+  const [expanded, setExpanded] = React.useState(false);
   
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
+    toast.success("Copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
   const isUser = message.type === "user";
+
+  // Add these functions for the buttons in the enhanced message
+  const handleExpandPrompt = () => {
+    // This would typically call an API to make the prompt more detailed
+    toast.info("Expanding prompt...");
+    // For now we'll just toggle the expanded state
+    setExpanded(!expanded);
+  };
+
+  const handleCompressPrompt = () => {
+    toast.info("Compressing prompt...");
+    setExpanded(false);
+  };
+
+  const handleDownload = () => {
+    const element = document.createElement("a");
+    const file = new Blob([message.content], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `enhanced-prompt-${new Date().toISOString().slice(0,10)}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    toast.success("Downloaded prompt");
+  };
   
   return (
     <div 
@@ -43,56 +71,62 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, className, onSelectO
         className={cn(
           "max-w-[85%] rounded-xl px-4 py-3 flex flex-col animate-slide-in",
           isUser 
-            ? "bg-blue-500/20 text-white rounded-tr-none" 
-            : "bg-bolt-card rounded-tl-none"
+            ? "bg-blue-700/20 text-white rounded-tr-none hover-border-glow" 
+            : "bg-[#070C18] rounded-tl-none hover-border-glow border border-white/5"
         )}
       >
         {!isUser && message.isEnhanced && (
-          <div className="text-xs text-blue-400 mb-1">
+          <div className="text-xs text-blue-500 mb-1 font-medium">
             Enhanced Prompt
           </div>
         )}
         
-        <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+        <div className={`text-sm whitespace-pre-wrap ${expanded ? "" : "max-h-[400px] overflow-y-auto prompt-chat-scrollbar"}`}>
+          {message.content}
+        </div>
         
-        {/* Display multiple options when available */}
-        {!isUser && message.options && message.options.length > 0 && (
-          <div className="mt-4 space-y-3">
-            <p className="text-xs text-blue-400 font-medium">Suggested enhancement options:</p>
-            <div className="space-y-3">
-              {message.options.map((option, index) => (
-                <div 
-                  key={index}
-                  className="p-3 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer text-xs transition-colors border border-white/5"
-                  onClick={() => onSelectOption && onSelectOption(option)}
-                >
-                  <p className="mb-1.5 font-medium text-blue-400">Option {index + 1}</p>
-                  <p className="whitespace-pre-wrap text-white/90">{option}</p>
-                  <div className="flex justify-end mt-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        copyToClipboard(option);
-                      }}
-                      className="text-xs flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 text-white/90 transition-colors"
-                    >
-                      {copied ? <Check size={12} /> : <Copy size={12} />}
-                      <span>{copied ? "Copied" : "Copy"}</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Action buttons for enhanced prompts */}
+        {!isUser && message.isEnhanced && (
+          <div className="flex flex-wrap gap-2 mt-3 pt-2 border-t border-white/5">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleExpandPrompt}
+              className="bg-blue-700/10 hover:bg-blue-700/20 text-blue-400 text-xs rounded-lg"
+            >
+              {expanded ? <MinusSquare className="h-3.5 w-3.5 mr-1" /> : <PlusSquare className="h-3.5 w-3.5 mr-1" />}
+              {expanded ? "Less Detailed" : "More Detailed"}
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleCompressPrompt}
+              className="bg-blue-700/10 hover:bg-blue-700/20 text-blue-400 text-xs rounded-lg"
+            >
+              <Maximize2 className="h-3.5 w-3.5 mr-1" />
+              Optimize
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleDownload}
+              className="bg-blue-700/10 hover:bg-blue-700/20 text-blue-400 text-xs rounded-lg"
+            >
+              <FileDown className="h-3.5 w-3.5 mr-1" />
+              Download
+            </Button>
           </div>
         )}
         
         <div className="flex justify-end items-center mt-1.5">
           <button
             onClick={() => copyToClipboard(message.content)}
-            className={`text-xs flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors ${
+            className={`text-xs flex items-center gap-1 px-2 py-1 rounded-md transition-colors ${
               isUser 
                 ? "bg-white/10 hover:bg-white/15 text-white/90" 
-                : "bg-white/5 hover:bg-white/10 text-white/80"
+                : "bg-blue-700/10 hover:bg-blue-700/20 text-blue-400"
             }`}
           >
             {copied ? (

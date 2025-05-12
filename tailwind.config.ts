@@ -59,16 +59,16 @@ export default {
         },
         // PromptShift custom colors - updated to darker bolt-like theme
         bolt: {
-          'primary': '#3B82F6', // Blue
-          'secondary': '#0E1116', // Very dark blue/almost black
-          'accent': '#60A5FA', // Lighter blue
-          'success': '#10B981', // Green
-          'error': '#EF4444', // Red
-          'light-gray': '#D1D5DB', // Light gray
-          'dark': '#080A0C', // Darker than black
-          'card': '#141820', // Dark card background
-          'input': '#1E2530', // Input background
-          'highlight': '#3B82F6', // Blue highlight
+          'primary': '#1E40AF', // Darker blue
+          'secondary': '#050A14', // Very dark blue/almost black
+          'accent': '#3B82F6', // Blue
+          'success': '#0D9488', // Dark teal
+          'error': '#DC2626', // Red
+          'light-gray': '#94A3B8', // Light gray
+          'dark': '#030712', // Darker than black
+          'card': '#070C18', // Dark card background
+          'input': '#0A1020', // Input background
+          'highlight': '#1E40AF', // Blue highlight
         }
       },
       borderRadius: {
@@ -100,6 +100,14 @@ export default {
         'pulse': {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.5' }
+        },
+        'glow': {
+          '0%, 100%': { boxShadow: '0 0 10px rgba(37,99,235,0.5)' },
+          '50%': { boxShadow: '0 0 20px rgba(37,99,235,0.8)' }
+        },
+        'spin-slow': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' }
         }
       },
       animation: {
@@ -108,7 +116,9 @@ export default {
         'fade-in': 'fade-in 0.3s ease-out',
         'fade-out': 'fade-out 0.3s ease-out',
         'slide-in': 'slide-in 0.4s ease-out',
-        'pulse': 'pulse 1.5s ease-in-out infinite'
+        'pulse': 'pulse 1.5s ease-in-out infinite',
+        'glow': 'glow 2s ease-in-out infinite',
+        'spin-slow': 'spin-slow 3s linear infinite'
       }
     }
   },
