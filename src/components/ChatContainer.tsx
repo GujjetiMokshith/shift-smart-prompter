@@ -18,14 +18,13 @@ const modelInstructions: Record<string, string> = {
   "mistral": "/src/instructions/mistral.md",
 };
 
+// Fixed Groq API key provided by the app owner
+const GROQ_API_KEY = "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";
+
 const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState("llama-4");
-  const [groqApiKey, setGroqApiKey] = useState<string>(() => {
-    return localStorage.getItem("groqApiKey") || "";
-  });
-  const [showApiKeyInput, setShowApiKeyInput] = useState(!localStorage.getItem("groqApiKey"));
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom of chat
@@ -33,20 +32,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Save API key to localStorage when it changes
-  useEffect(() => {
-    if (groqApiKey) {
-      localStorage.setItem("groqApiKey", groqApiKey);
-    }
-  }, [groqApiKey]);
-
   const handleSendMessage = async (content: string) => {
-    if (!groqApiKey) {
-      setShowApiKeyInput(true);
-      toast.error("Please enter your Groq API key first");
-      return;
-    }
-    
     // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -78,7 +64,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
-        content: "Sorry, I couldn't enhance your prompt. Please check your API key or try again later.",
+        content: "Sorry, I couldn't enhance your prompt. Please try again later.",
         isEnhanced: false,
         timestamp: new Date(),
       };
@@ -107,7 +93,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${groqApiKey}`,
+          "Authorization": `Bearer ${GROQ_API_KEY}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -134,16 +120,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
     }
   };
 
-  const handleSaveApiKey = () => {
-    if (groqApiKey) {
-      localStorage.setItem("groqApiKey", groqApiKey);
-      setShowApiKeyInput(false);
-      toast.success("API key saved successfully");
-    } else {
-      toast.error("Please enter a valid API key");
-    }
-  };
-
   return (
     <div className={cn("flex flex-col h-full", className)}>
       <div className="flex justify-between items-center mb-4 px-1">
@@ -155,40 +131,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
           />
         </div>
       </div>
-
-      {showApiKeyInput ? (
-        <div className="p-6 bg-black/30 rounded-lg border border-white/10 mb-4">
-          <h3 className="text-lg font-medium mb-2">Enter your Groq API Key</h3>
-          <p className="text-sm text-white/70 mb-4">
-            To use PromptShift, you need to provide your Groq API key. This will be stored locally in your browser.
-          </p>
-          <div className="flex gap-2">
-            <input
-              type="password"
-              className="flex-1 px-3 py-2 bg-black/50 border border-white/10 rounded-lg text-white outline-none focus:border-promptshift-accent"
-              placeholder="Enter your Groq API key"
-              value={groqApiKey}
-              onChange={(e) => setGroqApiKey(e.target.value)}
-            />
-            <button
-              className="px-4 py-2 bg-promptshift-primary text-white rounded-lg hover:bg-promptshift-accent transition-colors"
-              onClick={handleSaveApiKey}
-            >
-              Save
-            </button>
-          </div>
-          <p className="text-xs text-white/50 mt-2">
-            Don't have a Groq API key? <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-promptshift-accent hover:underline">Get one here</a>.
-          </p>
-        </div>
-      ) : (
-        <button 
-          className="text-xs text-white/50 hover:text-white mb-2 transition-colors self-end"
-          onClick={() => setShowApiKeyInput(true)}
-        >
-          Change API Key
-        </button>
-      )}
 
       <div className="flex-1 overflow-y-auto prompt-chat-scrollbar px-2">
         {messages.length === 0 ? (

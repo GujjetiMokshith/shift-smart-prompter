@@ -1,25 +1,10 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Header from "@/components/Header";
 import ChatContainer from "@/components/ChatContainer";
 import InfoPanel from "@/components/InfoPanel";
 
 const Index = () => {
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-  
-  useEffect(() => {
-    // Listen for the custom event to open API key input
-    const handleOpenApiKeyInput = () => {
-      setShowApiKeyInput(true);
-    };
-    
-    window.addEventListener("openApiKeyInput", handleOpenApiKeyInput);
-    
-    return () => {
-      window.removeEventListener("openApiKeyInput", handleOpenApiKeyInput);
-    };
-  }, []);
-
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-promptshift-secondary to-black">
       <Header />
