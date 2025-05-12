@@ -1,37 +1,36 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 220 30% 2%;
+    --background: 222 47% 1%;
     --foreground: 0 0% 100%;
 
-    --card: 222 30% 4%;
+    --card: 222 47% 2%;
     --card-foreground: 0 0% 100%;
 
-    --popover: 222 30% 4%;
+    --popover: 222 47% 2%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 214 100% 48%;
+    --primary: 222 89% 35%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 30% 8%;
+    --secondary: 222 47% 4%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 222 30% 10%;
-    --muted-foreground: 220 30% 70%;
+    --muted: 222 47% 5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 214 100% 60%;
+    --accent: 222 89% 35%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 30% 10%;
-    --input: 222 30% 10%;
-    --ring: 214 100% 48%;
+    --border: 222 47% 8%;
+    --input: 222 47% 8%;
+    --ring: 222 89% 35%;
 
     --radius: 0.5rem;
   }
@@ -41,64 +40,64 @@
   }
 
   body {
-    @apply bg-[#050A14] text-white antialiased;
+    @apply bg-[#030712] text-white antialiased;
   }
 
   /* Custom scrollbar for the chat area */
   .prompt-chat-scrollbar::-webkit-scrollbar {
-    width: 5px;
+    width: 4px;
   }
 
   .prompt-chat-scrollbar::-webkit-scrollbar-track {
-    @apply bg-black bg-opacity-20;
+    @apply bg-black/20;
   }
 
   .prompt-chat-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-blue-600 rounded-full;
+    @apply bg-blue-800 rounded-full;
   }
 
   /* Glassmorphism */
   .glass {
-    @apply bg-white/5 backdrop-blur-md border border-white/5 rounded-xl;
+    @apply bg-white/5 backdrop-blur-lg border border-white/5 rounded-xl;
   }
 
   .neo-blur {
-    @apply backdrop-blur-lg bg-black/60 border border-white/5 rounded-xl;
+    @apply backdrop-blur-xl bg-black/80 border border-white/5 rounded-xl;
   }
   
   /* Bolt-inspired classes with darker theme */
   .bolt-card {
-    @apply bg-[#070C18]/80 backdrop-blur-md border border-white/5 rounded-xl shadow-lg;
+    @apply bg-[#030712]/90 backdrop-blur-xl border border-white/5 rounded-xl shadow-lg;
   }
   
   .bolt-gradient {
-    @apply bg-gradient-to-br from-blue-700 to-blue-600;
+    @apply bg-gradient-to-br from-blue-900 to-blue-800;
   }
   
   .bolt-input {
-    @apply bg-[#0A1020] border border-white/5 rounded-xl text-white placeholder-white/40;
+    @apply bg-[#060B16] border border-white/5 rounded-xl text-white placeholder-white/30;
   }
   
-  /* Glow effects */
+  /* Enhanced glow effects */
   .glow-blue {
-    @apply shadow-[0_0_15px_rgba(37,99,235,0.5)];
+    @apply shadow-[0_0_25px_rgba(30,58,138,0.5)];
   }
   
   .glow-blue-sm {
-    @apply shadow-[0_0_8px_rgba(37,99,235,0.4)];
+    @apply shadow-[0_0_15px_rgba(30,58,138,0.4)];
   }
   
-  /* Hover effects */
+  /* Enhanced hover effects */
   .hover-scale {
-    @apply transition-transform duration-300 hover:scale-[1.02];
+    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(30,58,138,0.2)];
   }
   
   .hover-glow {
-    @apply transition-all duration-300 hover:shadow-[0_0_15px_rgba(37,99,235,0.6)];
+    @apply transition-all duration-300 hover:shadow-[0_0_25px_rgba(30,58,138,0.4)] hover:border-blue-900/50;
   }
   
   .hover-border-glow {
-    @apply transition-all duration-300 hover:border-blue-600/50;
+    @apply transition-all duration-300 hover:border-blue-900/50 hover:shadow-[0_0_15px_rgba(30,58,138,0.3)];
   }
   
   /* Loading animation */
@@ -107,20 +106,39 @@
   }
   
   .loading-container {
-    @apply fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-md z-50;
+    @apply fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-xl z-50;
   }
   
   .loading-spinner {
-    @apply h-12 w-12 animate-spin text-blue-600;
+    @apply h-14 w-14 animate-spin text-blue-800;
+  }
+
+  /* Text gradients */
+  .text-gradient-blue {
+    @apply bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent;
+  }
+
+  /* Enhanced modal backdrop */
+  .modal-backdrop {
+    @apply fixed inset-0 bg-black/80 backdrop-blur-xl z-40;
+  }
+
+  /* Enhanced button effects */
+  .button-glow {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+
+  .button-glow::after {
+    @apply content-[''] absolute inset-0 bg-gradient-to-r from-blue-900/0 via-blue-800/20 to-blue-900/0 opacity-0 transition-opacity duration-300;
+  }
+
+  .button-glow:hover::after {
+    @apply opacity-100;
   }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
-  }
-  
-  .text-gradient-blue {
-    @apply bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent;
   }
 }

@@ -36,13 +36,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           <Button
             size="icon"
             variant="ghost"
-            className="rounded-full bg-blue-700/20 hover:bg-blue-700/30 hover-glow-sm"
+            className="rounded-full bg-blue-900/20 hover:bg-blue-900/30 hover-glow-sm"
           >
             <Settings className="h-5 w-5 text-blue-500" />
             <span className="sr-only">Settings</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="bg-[#070C18] border-r border-white/5 text-white">
+        <SheetContent side="left" className="bg-[#030712] border-r border-white/5 text-white">
           <SheetHeader>
             <SheetTitle className="text-gradient-blue">Settings</SheetTitle>
           </SheetHeader>
@@ -55,7 +55,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   id="custom-prompt"
                   checked={localIsCustom}
                   onCheckedChange={setLocalIsCustom}
-                  className="data-[state=checked]:bg-blue-600"
+                  className="data-[state=checked]:bg-blue-800"
                 />
               </div>
               <p className="text-xs text-white/60">
@@ -69,7 +69,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 <Textarea
                   id="prompt-text"
                   placeholder="Enter your custom system prompt here..."
-                  className="bg-[#0A1020] border-white/5 min-h-[200px] text-white placeholder:text-white/30"
+                  className="bg-[#060B16] border-white/5 min-h-[200px] text-white placeholder:text-white/30"
                   value={localPrompt}
                   onChange={(e) => setLocalPrompt(e.target.value)}
                 />
@@ -80,7 +80,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             )}
             
             <Button 
-              className="w-full bg-blue-700 hover:bg-blue-800 text-white hover-glow" 
+              className="w-full bg-blue-900 hover:bg-blue-800 text-white hover-glow" 
               onClick={handleSave}
             >
               Save Settings

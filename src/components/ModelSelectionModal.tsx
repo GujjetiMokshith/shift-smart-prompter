@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -58,7 +57,7 @@ const ModelSelectionModal: React.FC<ModelSelectionModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-[#070C18] border border-white/5 text-white w-full max-w-md p-0 overflow-hidden glow-blue">
+      <DialogContent className="bg-[#030712] border border-white/5 text-white w-full max-w-md p-0 overflow-hidden glow-blue">
         <DialogHeader className="p-6 pb-2">
           <DialogTitle className="text-xl font-bold text-gradient-blue">Select AI Model</DialogTitle>
           <p className="text-sm text-white/70 mt-1">Choose which AI model to optimize your prompt for</p>
@@ -69,7 +68,7 @@ const ModelSelectionModal: React.FC<ModelSelectionModalProps> = ({
             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 h-4 w-4" />
             <Input 
               placeholder="Search models..." 
-              className="pl-10 bg-white/5 border-white/5 text-white placeholder:text-white/50 hover-border-glow"
+              className="pl-10 bg-[#060B16] border-white/5 text-white placeholder:text-white/30 hover-border-glow"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -83,9 +82,9 @@ const ModelSelectionModal: React.FC<ModelSelectionModalProps> = ({
                 key={model.id}
                 className={`flex items-center justify-between p-3 rounded-lg border hover-scale ${
                   currentModel === model.id 
-                    ? "bg-blue-700/20 border-blue-600 glow-blue-sm" 
-                    : "bg-white/5 border-transparent hover:bg-white/10"
-                } transition-all duration-200`}
+                    ? "bg-blue-900/20 border-blue-800 glow-blue-sm" 
+                    : "bg-[#060B16] border-transparent hover:bg-[#080E1A]"
+                } transition-all duration-300`}
                 onClick={() => onSelectModel(model.id)}
               >
                 <div className="flex flex-col items-start">
@@ -107,7 +106,7 @@ const ModelSelectionModal: React.FC<ModelSelectionModalProps> = ({
         
         <div className="p-4 border-t border-white/5 flex justify-end">
           <Button 
-            className="bg-blue-700 hover:bg-blue-800 text-white hover-glow"
+            className="bg-blue-900 hover:bg-blue-800 text-white hover-glow"
             onClick={() => onSelectModel(currentModel)}
           >
             Continue with {models.find(m => m.id === currentModel)?.name || 'Selected Model'}
