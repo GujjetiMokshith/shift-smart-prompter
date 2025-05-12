@@ -11,18 +11,20 @@ export interface Message {
   content: string;
   isEnhanced?: boolean;
   timestamp?: Date;
+  options?: string[]; // Added for multiple enhancement options
 }
 
 interface ChatMessageProps {
   message: Message;
   className?: string;
+  onSelectOption?: (option: string) => void; // Handler for option selection
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, className }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, className, onSelectOption }) => {
   const [copied, setCopied] = React.useState(false);
   
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(message.content);
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -42,20 +44,49 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, className }) => {
           "max-w-[85%] rounded-2xl px-4 py-3 flex flex-col animate-slide-in",
           isUser 
             ? "bg-promptshift-primary text-white rounded-tr-none" 
-            : "neo-blur rounded-tl-none"
+            : "bolt-card rounded-tl-none"
         )}
       >
         {!isUser && message.isEnhanced && (
-          <div className="text-xs text-promptshift-success mb-1">
+          <div className="text-xs text-promptshift-highlight-blue mb-1">
             Enhanced Prompt
           </div>
         )}
         
         <div className="text-sm whitespace-pre-wrap">{message.content}</div>
         
+        {/* Display multiple options when available */}
+        {!isUser && message.options && message.options.length > 0 && (
+          <div className="mt-3 space-y-2">
+            <p className="text-xs text-promptshift-light-gray">Suggested enhancement options:</p>
+            <div className="space-y-2">
+              {message.options.map((option, index) => (
+                <div 
+                  key={index}
+                  className="p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer text-xs transition-colors"
+                  onClick={() => onSelectOption && onSelectOption(option)}
+                >
+                  <p className="mb-1 font-medium text-promptshift-accent">Option {index + 1}</p>
+                  <p className="whitespace-pre-wrap">{option}</p>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copyToClipboard(option);
+                    }}
+                    className="mt-1 text-xs flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 hover:bg-white/10 text-white/80"
+                  >
+                    <Copy size={10} />
+                    <span>Copy</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
         <div className="flex justify-end items-center mt-1">
           <button
-            onClick={copyToClipboard}
+            onClick={() => copyToClipboard(message.content)}
             className={`text-xs flex items-center gap-1 px-2 py-0.5 rounded-full transition-colors ${
               isUser 
                 ? "bg-white/10 hover:bg-white/20 text-white/90" 

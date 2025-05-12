@@ -5,33 +5,33 @@
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
+    --background: 210 30% 8%;
     --foreground: 0 0% 98%;
 
-    --card: 240 10% 3.9%;
+    --card: 210 30% 12%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 10% 3.9%;
+    --popover: 210 30% 12%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 267 100% 47%;
+    --primary: 200 85% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 3.7% 7.1%;
+    --secondary: 210 30% 15%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 210 30% 20%;
+    --muted-foreground: 210 20% 70%;
 
-    --accent: 273 68% 59%;
+    --accent: 199 85% 57%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 270 91% 58%;
+    --border: 210 30% 20%;
+    --input: 210 30% 20%;
+    --ring: 200 85% 50%;
 
     --radius: 0.5rem;
   }
@@ -63,6 +63,15 @@
 
   .neo-blur {
     @apply backdrop-blur-lg bg-black/30 border border-white/10 rounded-xl;
+  }
+  
+  /* New Bolt-inspired classes */
+  .bolt-card {
+    @apply bg-promptshift-medium-blue/40 backdrop-blur-md border border-white/5 rounded-xl shadow-lg;
+  }
+  
+  .bolt-gradient {
+    @apply bg-gradient-to-br from-promptshift-primary to-promptshift-accent;
   }
 }
 

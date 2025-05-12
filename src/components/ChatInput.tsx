@@ -31,7 +31,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       onSubmit={handleSubmit} 
       className={cn("flex flex-col w-full", className)}
     >
-      <div className="glass p-1 flex items-start">
+      <div className="bolt-card p-1 flex items-start">
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
