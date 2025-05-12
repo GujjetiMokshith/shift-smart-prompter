@@ -57,37 +57,39 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, className, onSelectO
         
         {/* Display multiple options when available */}
         {!isUser && message.options && message.options.length > 0 && (
-          <div className="mt-3 space-y-2">
-            <p className="text-xs text-promptshift-light-gray">Suggested enhancement options:</p>
-            <div className="space-y-2">
+          <div className="mt-4 space-y-3">
+            <p className="text-xs text-promptshift-highlight-blue font-medium">Suggested enhancement options:</p>
+            <div className="space-y-3">
               {message.options.map((option, index) => (
                 <div 
                   key={index}
-                  className="p-2 rounded bg-white/5 hover:bg-white/10 cursor-pointer text-xs transition-colors"
+                  className="p-3 rounded-lg bg-promptshift-medium-blue/40 hover:bg-promptshift-medium-blue/60 cursor-pointer text-xs transition-colors border border-white/5"
                   onClick={() => onSelectOption && onSelectOption(option)}
                 >
-                  <p className="mb-1 font-medium text-promptshift-accent">Option {index + 1}</p>
-                  <p className="whitespace-pre-wrap">{option}</p>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      copyToClipboard(option);
-                    }}
-                    className="mt-1 text-xs flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 hover:bg-white/10 text-white/80"
-                  >
-                    <Copy size={10} />
-                    <span>Copy</span>
-                  </button>
+                  <p className="mb-1.5 font-medium text-promptshift-accent">Option {index + 1}</p>
+                  <p className="whitespace-pre-wrap text-white/90">{option}</p>
+                  <div className="flex justify-end mt-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        copyToClipboard(option);
+                      }}
+                      className="text-xs flex items-center gap-1 px-2 py-1 rounded-md bg-white/10 hover:bg-white/15 text-white/90 transition-colors"
+                    >
+                      {copied ? <Check size={12} /> : <Copy size={12} />}
+                      <span>{copied ? "Copied" : "Copy"}</span>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
         
-        <div className="flex justify-end items-center mt-1">
+        <div className="flex justify-end items-center mt-1.5">
           <button
             onClick={() => copyToClipboard(message.content)}
-            className={`text-xs flex items-center gap-1 px-2 py-0.5 rounded-full transition-colors ${
+            className={`text-xs flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors ${
               isUser 
                 ? "bg-white/10 hover:bg-white/20 text-white/90" 
                 : "bg-white/5 hover:bg-white/10 text-white/80"

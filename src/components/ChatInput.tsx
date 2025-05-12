@@ -31,7 +31,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       onSubmit={handleSubmit} 
       className={cn("flex flex-col w-full", className)}
     >
-      <div className="bolt-card p-1 flex items-start">
+      <div className="bg-promptshift-medium-blue/30 border border-white/10 rounded-xl p-1.5 flex items-start">
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
@@ -45,8 +45,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
           disabled={disabled || !message.trim()}
           className={`p-2 mt-1 mr-1 rounded-full transition-colors ${
             disabled || !message.trim()
-              ? "bg-promptshift-primary/30 text-white/40"
-              : "bg-promptshift-primary hover:bg-promptshift-accent text-white"
+              ? "bg-promptshift-primary/20 text-white/30"
+              : "bg-promptshift-primary hover:bg-promptshift-accent text-white shadow-md"
           }`}
         >
           <Send size={18} />

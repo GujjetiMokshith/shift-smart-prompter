@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -66,17 +67,17 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))'
         },
-        // PromptShift custom colors - updated to blue theme
+        // PromptShift custom colors - updated to darker blue theme
         promptshift: {
-          'primary': '#1EAEDB', // Bright blue (was purple)
-          'secondary': '#121E2C', // Dark blue (was black)
-          'accent': '#33C3F0', // Sky blue (was purple)
+          'primary': '#1E88E5', // Slightly darker blue
+          'secondary': '#0A1929', // Much darker blue
+          'accent': '#29B6F6', // Sky blue
           'success': '#03DAC5', // Keep teal
           'error': '#CF6679', // Keep red
           'light-gray': '#E0E0E0', // Keep light gray
-          'dark-blue': '#0A1521', // Deeper dark blue
-          'medium-blue': '#2A3F54', // Medium blue
-          'highlight-blue': '#4DA3FF' // Highlight blue
+          'dark-blue': '#071426', // Even deeper dark blue
+          'medium-blue': '#122C44', // Darker medium blue
+          'highlight-blue': '#4DA3FF' // Keep highlight blue
         }
       },
       borderRadius: {

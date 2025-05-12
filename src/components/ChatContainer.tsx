@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import ChatMessage, { Message, MessageType } from "./ChatMessage";
 import ChatInput from "./ChatInput";
@@ -105,7 +106,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama-3-8b-8192",
+          model: "llama-2-70b-chat",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt }

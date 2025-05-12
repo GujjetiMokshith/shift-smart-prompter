@@ -1,7 +1,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Settings, Menu } from "lucide-react";
+import { Settings, Menu, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -10,13 +10,16 @@ interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
 const Header: React.FC<HeaderProps> = ({ className, ...props }) => {
   return (
     <header 
-      className={cn("w-full py-4 px-6 flex items-center justify-between border-b border-white/10 bg-promptshift-dark-blue", className)} 
+      className={cn("w-full py-4 px-6 flex items-center justify-between border-b border-white/10 bg-promptshift-dark-blue/90 backdrop-blur-md", className)} 
       {...props}
     >
       <div className="flex items-center">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-promptshift-accent to-promptshift-primary bg-clip-text text-transparent">
-          PromptShift
-        </h1>
+        <div className="flex items-center">
+          <Zap className="h-5 w-5 text-promptshift-accent mr-2" />
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-promptshift-accent to-promptshift-primary bg-clip-text text-transparent">
+            PromptShift
+          </h1>
+        </div>
         <span className="ml-2 bg-promptshift-accent/20 text-promptshift-accent text-xs px-2 py-0.5 rounded-full">
           beta
         </span>
