@@ -57,27 +57,18 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'
         },
-        sidebar: {
-          DEFAULT: 'hsl(var(--sidebar-background))',
-          foreground: 'hsl(var(--sidebar-foreground))',
-          primary: 'hsl(var(--sidebar-primary))',
-          'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-          accent: 'hsl(var(--sidebar-accent))',
-          'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-          border: 'hsl(var(--sidebar-border))',
-          ring: 'hsl(var(--sidebar-ring))'
-        },
-        // PromptShift custom colors - updated to darker blue theme
-        promptshift: {
-          'primary': '#1E88E5', // Slightly darker blue
-          'secondary': '#0A1929', // Much darker blue
-          'accent': '#29B6F6', // Sky blue
-          'success': '#03DAC5', // Keep teal
-          'error': '#CF6679', // Keep red
-          'light-gray': '#E0E0E0', // Keep light gray
-          'dark-blue': '#071426', // Even deeper dark blue
-          'medium-blue': '#122C44', // Darker medium blue
-          'highlight-blue': '#4DA3FF' // Keep highlight blue
+        // PromptShift custom colors - updated to darker bolt-like theme
+        bolt: {
+          'primary': '#3B82F6', // Blue
+          'secondary': '#0E1116', // Very dark blue/almost black
+          'accent': '#60A5FA', // Lighter blue
+          'success': '#10B981', // Green
+          'error': '#EF4444', // Red
+          'light-gray': '#D1D5DB', // Light gray
+          'dark': '#080A0C', // Darker than black
+          'card': '#141820', // Dark card background
+          'input': '#1E2530', // Input background
+          'highlight': '#3B82F6', // Blue highlight
         }
       },
       borderRadius: {

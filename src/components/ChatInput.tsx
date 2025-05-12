@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Link, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChatInputProps {
@@ -12,7 +12,7 @@ interface ChatInputProps {
 
 const ChatInput: React.FC<ChatInputProps> = ({
   onSubmit,
-  placeholder = "Paste your prompt here...",
+  placeholder = "How can PromptShift help you today?",
   disabled = false,
   className,
 }) => {
@@ -31,33 +31,40 @@ const ChatInput: React.FC<ChatInputProps> = ({
       onSubmit={handleSubmit} 
       className={cn("flex flex-col w-full", className)}
     >
-      <div className="bg-promptshift-medium-blue/30 border border-white/10 rounded-xl p-1.5 flex items-start">
+      <div className="bg-bolt-card border border-white/5 rounded-xl p-2 flex items-center">
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder={placeholder}
           disabled={disabled}
-          rows={3}
-          className="flex-1 bg-transparent px-3 py-2 resize-none outline-none text-white placeholder-white/40 text-sm"
+          rows={1}
+          className="flex-1 bg-transparent px-3 py-2 resize-none outline-none text-white placeholder-white/40 text-sm min-h-[40px]"
         />
-        <button
-          type="submit"
-          disabled={disabled || !message.trim()}
-          className={`p-2 mt-1 mr-1 rounded-full transition-colors ${
-            disabled || !message.trim()
-              ? "bg-promptshift-primary/20 text-white/30"
-              : "bg-promptshift-primary hover:bg-promptshift-accent text-white shadow-md"
-          }`}
-        >
-          <Send size={18} />
-        </button>
-      </div>
-      
-      <div className="mt-2 px-2 flex justify-between text-xs text-white/50">
-        <span>{message.length > 0 ? `${message.length} characters` : "Enter your prompt"}</span>
-        <span>
-          ~{Math.max(1, Math.ceil(message.length / 4))} tokens
-        </span>
+        <div className="flex items-center gap-2 px-2">
+          <button
+            type="button" 
+            className="p-1.5 rounded-full text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
+          >
+            <Link size={16} />
+          </button>
+          <button
+            type="button"
+            className="p-1.5 rounded-full text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
+          >
+            <Paperclip size={16} />
+          </button>
+          <button
+            type="submit"
+            disabled={disabled || !message.trim()}
+            className={`p-2 rounded-full transition-colors ${
+              disabled || !message.trim()
+                ? "bg-blue-500/20 text-white/30"
+                : "bg-blue-500 hover:bg-blue-600 text-white"
+            }`}
+          >
+            <Send size={16} />
+          </button>
+        </div>
       </div>
     </form>
   );

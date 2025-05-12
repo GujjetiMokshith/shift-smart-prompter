@@ -5,6 +5,7 @@
 - Strong reasoning and step-by-step thinking capabilities
 - Excellent at decomposing complex problems
 - Good for detailed explanations and analysis
+- More precise with technical content
 
 ## Enhancement Strategy
 When enhancing prompts for Llama 4:

@@ -13,28 +13,28 @@ const InfoPanel: React.FC<InfoPanelProps> = ({ className }) => {
       
       <div className="space-y-4">
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-promptshift-accent">1. Enter Your Prompt</h4>
+          <h4 className="text-sm font-medium text-blue-400">1. Enter Your Prompt</h4>
           <p className="text-xs text-white/70">
             Simply paste your existing prompt into the chat area.
           </p>
         </div>
         
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-promptshift-accent">2. Select Target Model</h4>
+          <h4 className="text-sm font-medium text-blue-400">2. Select Target Model</h4>
           <p className="text-xs text-white/70">
             Choose which AI model you're optimizing for from the dropdown menu.
           </p>
         </div>
         
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-promptshift-accent">3. Get Enhanced Results</h4>
+          <h4 className="text-sm font-medium text-blue-400">3. Get Enhanced Results</h4>
           <p className="text-xs text-white/70">
             Our AI analyzes and enhances your prompt to work better with the selected model.
           </p>
         </div>
         
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-promptshift-accent">4. Copy & Use</h4>
+          <h4 className="text-sm font-medium text-blue-400">4. Copy & Use</h4>
           <p className="text-xs text-white/70">
             Copy the enhanced prompt with a single click and use it with your chosen AI model.
           </p>
@@ -49,8 +49,8 @@ const InfoPanel: React.FC<InfoPanelProps> = ({ className }) => {
             <p className="text-xs">Generate a social media post about sustainable fashion.</p>
           </div>
           
-          <div className="bg-promptshift-primary/20 border border-promptshift-primary/30 p-2 rounded-lg">
-            <div className="text-[10px] uppercase text-promptshift-accent mb-1">Enhanced</div>
+          <div className="bg-blue-500/20 border border-blue-500/30 p-2 rounded-lg">
+            <div className="text-[10px] uppercase text-blue-400 mb-1">Enhanced</div>
             <p className="text-xs">
               Compose an engaging Instagram caption promoting sustainable fashion brands. Emphasize eco-friendly materials, ethical labor practices, and include a call-to-action encouraging followers to share their favorite green fashion tips. Include 2-3 sample hashtags and maintain a conversational tone suitable for Gen Z audiences.
             </p>

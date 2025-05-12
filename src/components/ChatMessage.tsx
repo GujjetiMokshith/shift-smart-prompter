@@ -41,14 +41,14 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, className, onSelectO
     >
       <div 
         className={cn(
-          "max-w-[85%] rounded-2xl px-4 py-3 flex flex-col animate-slide-in",
+          "max-w-[85%] rounded-xl px-4 py-3 flex flex-col animate-slide-in",
           isUser 
-            ? "bg-promptshift-primary text-white rounded-tr-none" 
-            : "bolt-card rounded-tl-none"
+            ? "bg-blue-500/20 text-white rounded-tr-none" 
+            : "bg-bolt-card rounded-tl-none"
         )}
       >
         {!isUser && message.isEnhanced && (
-          <div className="text-xs text-promptshift-highlight-blue mb-1">
+          <div className="text-xs text-blue-400 mb-1">
             Enhanced Prompt
           </div>
         )}
@@ -58,15 +58,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, className, onSelectO
         {/* Display multiple options when available */}
         {!isUser && message.options && message.options.length > 0 && (
           <div className="mt-4 space-y-3">
-            <p className="text-xs text-promptshift-highlight-blue font-medium">Suggested enhancement options:</p>
+            <p className="text-xs text-blue-400 font-medium">Suggested enhancement options:</p>
             <div className="space-y-3">
               {message.options.map((option, index) => (
                 <div 
                   key={index}
-                  className="p-3 rounded-lg bg-promptshift-medium-blue/40 hover:bg-promptshift-medium-blue/60 cursor-pointer text-xs transition-colors border border-white/5"
+                  className="p-3 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer text-xs transition-colors border border-white/5"
                   onClick={() => onSelectOption && onSelectOption(option)}
                 >
-                  <p className="mb-1.5 font-medium text-promptshift-accent">Option {index + 1}</p>
+                  <p className="mb-1.5 font-medium text-blue-400">Option {index + 1}</p>
                   <p className="whitespace-pre-wrap text-white/90">{option}</p>
                   <div className="flex justify-end mt-2">
                     <button
@@ -74,7 +74,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, className, onSelectO
                         e.stopPropagation();
                         copyToClipboard(option);
                       }}
-                      className="text-xs flex items-center gap-1 px-2 py-1 rounded-md bg-white/10 hover:bg-white/15 text-white/90 transition-colors"
+                      className="text-xs flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 text-white/90 transition-colors"
                     >
                       {copied ? <Check size={12} /> : <Copy size={12} />}
                       <span>{copied ? "Copied" : "Copy"}</span>
@@ -91,7 +91,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, className, onSelectO
             onClick={() => copyToClipboard(message.content)}
             className={`text-xs flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors ${
               isUser 
-                ? "bg-white/10 hover:bg-white/20 text-white/90" 
+                ? "bg-white/10 hover:bg-white/15 text-white/90" 
                 : "bg-white/5 hover:bg-white/10 text-white/80"
             }`}
           >

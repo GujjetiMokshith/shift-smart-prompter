@@ -6,6 +6,7 @@
 - Excels with precise, detailed instructions
 - Good for code generation and technical analysis
 - Handles structured data well
+- Efficient with concise prompts
 
 ## Enhancement Strategy
 When enhancing prompts for Mistral AI:

@@ -6,6 +6,7 @@
 - Good at following structured instructions
 - Effective with explicit formatting guidance
 - Benefits from clear scope definition
+- Versatile in handling different topics
 
 ## Enhancement Strategy
 When enhancing prompts for ChatGPT:

@@ -6,6 +6,7 @@
 - Strong at following complex instructions
 - Great at creative and conversational tasks
 - Tends toward verbosity and thoroughness
+- Handle complex ethical questions well
 
 ## Enhancement Strategy
 When enhancing prompts for Claude:

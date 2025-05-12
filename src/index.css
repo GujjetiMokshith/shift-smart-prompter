@@ -5,33 +5,33 @@
 
 @layer base {
   :root {
-    --background: 212 35% 6%;
-    --foreground: 0 0% 98%;
+    --background: 220 20% 4%;
+    --foreground: 0 0% 100%;
 
-    --card: 212 35% 9%;
-    --card-foreground: 0 0% 98%;
+    --card: 220 20% 6%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 212 35% 9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 20% 6%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 200 85% 50%;
+    --primary: 210 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 212 35% 12%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 20% 10%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 212 35% 15%;
-    --muted-foreground: 212 20% 70%;
+    --muted: 220 20% 12%;
+    --muted-foreground: 220 20% 70%;
 
-    --accent: 199 85% 57%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 210 100% 65%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 212 35% 15%;
-    --input: 212 35% 15%;
-    --ring: 200 85% 50%;
+    --border: 220 20% 12%;
+    --input: 220 20% 12%;
+    --ring: 210 100% 50%;
 
     --radius: 0.5rem;
   }
@@ -41,7 +41,7 @@
   }
 
   body {
-    @apply bg-promptshift-secondary text-white antialiased;
+    @apply bg-black text-white antialiased;
   }
 
   /* Custom scrollbar for the chat area */
@@ -54,24 +54,28 @@
   }
 
   .prompt-chat-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-promptshift-accent rounded-full;
+    @apply bg-blue-500 rounded-full;
   }
 
   .glass {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-xl;
+    @apply bg-white/5 backdrop-blur-md border border-white/5 rounded-xl;
   }
 
   .neo-blur {
-    @apply backdrop-blur-lg bg-black/40 border border-white/10 rounded-xl;
+    @apply backdrop-blur-lg bg-black/40 border border-white/5 rounded-xl;
   }
   
   /* Bolt-inspired classes */
   .bolt-card {
-    @apply bg-promptshift-dark-blue/60 backdrop-blur-md border border-white/5 rounded-xl shadow-lg;
+    @apply bg-[#0E1116]/60 backdrop-blur-md border border-white/5 rounded-xl shadow-lg;
   }
   
   .bolt-gradient {
-    @apply bg-gradient-to-br from-promptshift-primary to-promptshift-accent;
+    @apply bg-gradient-to-br from-blue-500 to-blue-400;
+  }
+  
+  .bolt-input {
+    @apply bg-[#141820] border border-white/5 rounded-xl text-white placeholder-white/40;
   }
 }
 

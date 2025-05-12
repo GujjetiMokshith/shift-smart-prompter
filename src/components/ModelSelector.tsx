@@ -26,24 +26,24 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
   const models: Model[] = [
     {
       id: "llama-4",
-      name: "Gruq Llama 4",
-      description: "Primary AI model for enhanced prompting",
+      name: "Llama 4",
+      description: "Optimized for reasoning and understanding",
       isPrimary: true,
     },
     {
       id: "claude",
       name: "Claude",
-      description: "Alternative model with different capabilities",
+      description: "Balanced performance with nuanced responses",
     },
     {
       id: "chatgpt",
       name: "ChatGPT",
-      description: "OpenAI's GPT model for varied enhancement",
+      description: "Great at following structured instructions",
     },
     {
       id: "mistral",
       name: "Mistral AI",
-      description: "Open source model for specialized tasks",
+      description: "Excellent for technical and precise tasks",
     },
   ];
 
@@ -52,19 +52,19 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
   return (
     <div className={cn("relative", className)}>
       <button
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-black/30 hover:bg-black/50 border border-white/5 text-sm transition-colors"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-bolt-card hover:bg-bolt-input border border-white/5 text-sm transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex flex-col items-start">
-          <span className="font-medium text-xs text-white">Optimizing for:</span>
-          <span className="text-promptshift-accent">{selectedModelData.name}</span>
+          <span className="font-medium text-xs text-white">Target Model:</span>
+          <span className="text-blue-400">{selectedModelData.name}</span>
         </div>
         <ChevronDown size={16} className={`text-white/70 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
       
       {isOpen && (
         <div 
-          className="absolute top-full mt-1 w-64 glass p-1 z-10 animate-fade-in"
+          className="absolute top-full right-0 mt-2 w-64 bg-bolt-card border border-white/5 p-1 z-10 rounded-lg shadow-lg animate-fade-in"
         >
           <div className="text-xs text-white/70 px-2 py-1">Select target model</div>
           <div className="space-y-1">
@@ -73,7 +73,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
                 key={model.id}
                 className={`w-full flex items-center justify-between p-2 rounded-md text-left text-sm ${
                   selectedModel === model.id
-                    ? "bg-promptshift-primary text-white"
+                    ? "bg-blue-500 text-white"
                     : "hover:bg-white/5 text-white"
                 } transition-colors`}
                 onClick={() => {
@@ -85,7 +85,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
                   <span className="font-medium flex items-center gap-1">
                     {model.name}
                     {model.isPrimary && (
-                      <span className="text-[10px] bg-promptshift-success/20 text-promptshift-success px-1 rounded">
+                      <span className="text-[10px] bg-green-500/20 text-green-400 px-1 rounded">
                         Primary
                       </span>
                     )}

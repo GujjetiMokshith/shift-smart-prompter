@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import ChatMessage, { Message, MessageType } from "./ChatMessage";
 import ChatInput from "./ChatInput";
@@ -84,7 +83,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
 
   const generateEnhancedPrompts = async (prompt: string, model: string): Promise<string[]> => {
     // Format system message based on the selected model
-    const systemPrompt = `You are an expert prompt engineer for the ${model === "llama-4" ? "Groq Llama 4" : 
+    const systemPrompt = `You are an expert prompt engineer for the ${model === "llama-4" ? "Llama 4" : 
       model === "claude" ? "Claude" : 
       model === "chatgpt" ? "ChatGPT" : 
       "Mistral AI"} model. 
@@ -93,7 +92,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
       The variations should be significantly different from each other to give the user multiple options.
       Return ONLY the 4 enhanced prompts separated by the delimiter "|||" without any explanations or additional text.`;
 
-    const userPrompt = `Please enhance this prompt for the ${model === "llama-4" ? "Groq Llama 4" : 
+    const userPrompt = `Please enhance this prompt for the ${model === "llama-4" ? "Llama 4" : 
       model === "claude" ? "Claude" : 
       model === "chatgpt" ? "ChatGPT" : 
       "Mistral AI"} model: "${prompt}"`;
@@ -106,7 +105,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama-2-70b-chat",
+          model: "llama-3.3-70b-versatile",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt }
@@ -163,26 +162,24 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
   return (
     <div className={cn("flex flex-col h-full", className)}>
       <div className="flex justify-between items-center mb-4 px-4 pt-4">
-        <h2 className="text-lg font-medium text-promptshift-light-gray">Enhance Your Prompts</h2>
-        <div className="flex gap-2">
-          <ModelSelector 
-            selectedModel={selectedModel}
-            onSelectModel={setSelectedModel}
-          />
-        </div>
+        <h2 className="text-lg font-medium text-white">Enhance Your Prompts</h2>
+        <ModelSelector 
+          selectedModel={selectedModel}
+          onSelectModel={setSelectedModel}
+        />
       </div>
 
-      <div className="flex-1 overflow-y-auto prompt-chat-scrollbar px-4">
+      <div className="flex-1 overflow-y-auto prompt-chat-scrollbar px-4 min-h-[300px] max-h-[500px]">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6">
-            <div className="w-16 h-16 rounded-full bg-promptshift-primary/20 flex items-center justify-center mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-promptshift-accent">
+            <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
               </svg>
             </div>
-            <h3 className="text-lg font-medium mb-2 bg-gradient-to-r from-promptshift-accent to-promptshift-primary bg-clip-text text-transparent">Welcome to PromptShift</h3>
+            <h3 className="text-lg font-medium mb-2 text-white">How can I help you today?</h3>
             <p className="text-sm text-white/70 max-w-md">
-              Paste your existing prompt below and we'll enhance it for your selected AI model with multiple options.
+              Paste your existing prompt below and I'll enhance it for your selected AI model with multiple options.
             </p>
           </div>
         ) : (
@@ -197,9 +194,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
         
         {loading && (
           <div className="flex items-center space-x-2 p-4">
-            <div className="w-2 h-2 rounded-full bg-promptshift-accent animate-pulse"></div>
-            <div className="w-2 h-2 rounded-full bg-promptshift-accent animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-2 h-2 rounded-full bg-promptshift-accent animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+            <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
+            <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+            <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" style={{ animationDelay: '0.4s' }}></div>
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -209,7 +206,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ className }) => {
         <ChatInput 
           onSubmit={handleSendMessage}
           disabled={loading}
-          placeholder="Paste your prompt here to enhance it..."
+          placeholder="How can PromptShift help you today?"
         />
       </div>
     </div>
