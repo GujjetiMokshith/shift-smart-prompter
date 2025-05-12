@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Settings } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
@@ -32,17 +31,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed bottom-4 left-4 z-20">
-      <SheetTrigger asChild>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="rounded-full bg-blue-700/20 hover:bg-blue-700/30 hover-glow-sm"
-        >
-          <Settings className="h-5 w-5 text-blue-500" />
-          <span className="sr-only">Settings</span>
-        </Button>
-      </SheetTrigger>
       <Sheet>
+        <SheetTrigger asChild>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="rounded-full bg-blue-700/20 hover:bg-blue-700/30 hover-glow-sm"
+          >
+            <Settings className="h-5 w-5 text-blue-500" />
+            <span className="sr-only">Settings</span>
+          </Button>
+        </SheetTrigger>
         <SheetContent side="left" className="bg-[#070C18] border-r border-white/5 text-white">
           <SheetHeader>
             <SheetTitle className="text-gradient-blue">Settings</SheetTitle>
