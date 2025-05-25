@@ -35,11 +35,20 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const [currentEnhancedPrompt, setCurrentEnhancedPrompt] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Groq client with your API key
+  // Initialize Groq client
   const groq = new Groq({ 
     apiKey: "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",
     dangerouslyAllowBrowser: true 
   });
+
+  // Available Groq models
+  const availableModels = [
+    "llama-3.3-70b-versatile",
+    "llama-3.1-70b-versatile", 
+    "llama-3.1-8b-instant",
+    "mixtral-8x7b-32768",
+    "gemma2-9b-it"
+  ];
 
   // Load active prompt data
   useEffect(() => {
@@ -123,6 +132,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     setLoading(true);
     
     try {
+      console.log('Starting prompt enhancement with model:', modelId);
       const enhancedPrompt = await generateEnhancedPrompt(inputText, modelId);
       
       const enhancedMessage: Message = {
@@ -181,22 +191,58 @@ Example transformations:
 
 Your enhanced prompt should be 3–5× more detailed than the original. Return ONLY the enhanced prompt with no explanations or meta-commentary.`;
 
-    try {
-      const completion = await groq.chat.completions.create({
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: prompt }
-        ],
-        model: model,
-        temperature: 0.7,
-        max_tokens: 4000
-      });
+    let currentModelIndex = 0;
+    const models = availableModels.includes(model) ? [model, ...availableModels.filter(m => m !== model)] : availableModels;
 
-      return completion.choices[0]?.message?.content || "Error generating enhanced prompt";
-    } catch (error) {
-      console.error("Groq API error:", error);
-      throw error;
+    while (currentModelIndex < models.length) {
+      const currentModel = models[currentModelIndex];
+      console.log(`Trying model: ${currentModel}`);
+
+      let retryCount = 0;
+      while (retryCount < 3) {
+        try {
+          console.log(`Attempt ${retryCount + 1} with model: ${currentModel}`);
+          
+          const completion = await groq.chat.completions.create({
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: prompt }
+            ],
+            model: currentModel,
+            temperature: 0.7,
+            max_tokens: 4000,
+            stream: false
+          });
+
+          const result = completion.choices[0]?.message?.content;
+          if (result) {
+            console.log(`✅ Success with model: ${currentModel}`);
+            return result;
+          } else {
+            throw new Error('No content in response');
+          }
+        } catch (error: any) {
+          console.error(`❌ Error with ${currentModel}:`, error);
+          
+          if (error.error?.type === 'rate_limit_exceeded') {
+            console.log(`⏳ Rate limit hit for ${currentModel}`);
+            retryCount++;
+            if (retryCount < 3) {
+              const waitTime = 2; // Wait 2 seconds before retry
+              console.log(`Waiting ${waitTime} seconds...`);
+              await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
+              continue;
+            }
+          }
+          break; // Try next model
+        }
+      }
+      
+      console.log(`Switching from ${currentModel} to next model...`);
+      currentModelIndex++;
     }
+
+    throw new Error('All models failed to generate response');
   };
 
   const savePromptToDatabase = async (originalPrompt: string, enhancedPrompt: string, modelUsed: string) => {
