@@ -1,19 +1,140 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import ChatContainer from "@/components/ChatContainer";
 import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Folder, Plus, Settings, Sparkles } from "lucide-react";
+import { Plus, FileText, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+
+interface EnhancedPrompt {
+  id: string;
+  original_prompt: string;
+  enhanced_prompt: string;
+  model_used: string;
+  created_at: string;
+}
+
+interface UserProfile {
+  plan_type: string;
+  prompts_used: number;
+}
 
 const Workspace = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [savedPrompts, setSavedPrompts] = useState<EnhancedPrompt[]>([]);
   const [activePrompt, setActivePrompt] = useState<string | null>(null);
-  
-  const savedPrompts = [
-    { id: "1", name: "Product Description", date: "May 10" },
-    { id: "2", name: "Blog Outline", date: "May 8" },
-    { id: "3", name: "Email Campaign", date: "May 5" },
-  ];
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check authentication
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate('/');
+        return;
+      }
+      setUser(session.user);
+      fetchUserData(session.user.id);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate('/');
+        return;
+      }
+      setUser(session.user);
+      if (event === 'SIGNED_IN') {
+        fetchUserData(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const fetchUserData = async (userId: string) => {
+    try {
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('plan_type, prompts_used')
+        .eq('id', userId)
+        .single();
+
+      if (profileError) throw profileError;
+      setUserProfile(profile);
+
+      // Fetch saved prompts
+      const { data: prompts, error: promptsError } = await supabase
+        .from('enhanced_prompts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (promptsError) throw promptsError;
+      setSavedPrompts(prompts || []);
+    } catch (error: any) {
+      console.error('Error fetching user data:', error);
+      toast.error('Failed to load user data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeletePrompt = async (promptId: string) => {
+    try {
+      const { error } = await supabase
+        .from('enhanced_prompts')
+        .delete()
+        .eq('id', promptId);
+
+      if (error) throw error;
+
+      setSavedPrompts(prev => prev.filter(p => p.id !== promptId));
+      if (activePrompt === promptId) {
+        setActivePrompt(null);
+      }
+      toast.success('Prompt deleted successfully');
+    } catch (error: any) {
+      console.error('Error deleting prompt:', error);
+      toast.error('Failed to delete prompt');
+    }
+  };
+
+  const canCreateNewPrompt = () => {
+    if (!userProfile) return false;
+    if (userProfile.plan_type === 'free') {
+      return userProfile.prompts_used < 5; // Free tier limit
+    }
+    return true; // Pro and Enterprise have unlimited
+  };
+
+  const getUsageInfo = () => {
+    if (!userProfile) return '';
+    if (userProfile.plan_type === 'free') {
+      return `${userProfile.prompts_used}/5 prompts used today`;
+    }
+    return `${userProfile.prompts_used} prompts used`;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#050A14] text-white">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="loading-container">
+            <div className="neo-blur p-8 rounded-2xl">
+              <div className="loading-spinner" />
+              <p className="mt-4 text-blue-400">Loading workspace...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#050A14] text-white">
@@ -21,51 +142,97 @@ const Workspace = () => {
       
       <main className="flex-1 flex">
         {/* Sidebar */}
-        <div className="w-64 border-r border-white/5 p-4 flex flex-col">
+        <div className="w-80 border-r border-white/5 p-6 flex flex-col bg-[#030712]/50">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-bold text-gradient-blue">Workspace</h2>
-            <Button size="icon" variant="ghost" className="rounded-full hover:bg-white/5">
-              <Settings className="h-4 w-4 text-white/70" />
-            </Button>
+            <h2 className="text-xl font-bold text-gradient-blue">Your Prompts</h2>
+            <div className="text-xs text-white/50">
+              {getUsageInfo()}
+            </div>
           </div>
           
           <Button 
-            className="w-full bg-blue-700 hover:bg-blue-800 text-white mb-6 hover-glow"
+            className={`w-full bg-blue-800 hover:bg-blue-700 text-white mb-6 hover-glow ${
+              !canCreateNewPrompt() ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            disabled={!canCreateNewPrompt()}
+            onClick={() => setActivePrompt(null)}
           >
-            <Plus className="h-4 w-4 mr-2" /> New Prompt
+            <Plus className="h-4 w-4 mr-2" /> New Enhancement
           </Button>
+
+          {!canCreateNewPrompt() && userProfile?.plan_type === 'free' && (
+            <div className="mb-4 p-3 bg-blue-900/20 border border-blue-600/30 rounded-lg">
+              <p className="text-xs text-blue-400">
+                Daily limit reached. Upgrade to Pro for unlimited enhancements.
+              </p>
+            </div>
+          )}
           
-          <div className="space-y-1 flex-1 overflow-y-auto prompt-chat-scrollbar">
-            {savedPrompts.map(prompt => (
-              <button
-                key={prompt.id}
-                className={`w-full text-left p-2 rounded-md hover:bg-white/5 transition-colors flex items-center justify-between group ${
-                  activePrompt === prompt.id ? "bg-blue-700/20 text-blue-400" : "text-white/70"
-                }`}
-                onClick={() => setActivePrompt(prompt.id)}
-              >
-                <div className="flex items-center">
-                  <Folder className="h-4 w-4 mr-2 opacity-70" />
-                  <span>{prompt.name}</span>
+          <div className="space-y-2 flex-1 overflow-y-auto prompt-chat-scrollbar">
+            {savedPrompts.length === 0 ? (
+              <div className="text-center py-8 text-white/50">
+                <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No prompts yet</p>
+                <p className="text-xs">Create your first enhancement</p>
+              </div>
+            ) : (
+              savedPrompts.map(prompt => (
+                <div
+                  key={prompt.id}
+                  className={`p-3 rounded-lg cursor-pointer transition-all duration-200 group ${
+                    activePrompt === prompt.id 
+                      ? "bg-blue-800/20 border border-blue-600/30" 
+                      : "hover:bg-white/5 border border-transparent"
+                  }`}
+                  onClick={() => setActivePrompt(prompt.id)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <FileText className="h-3 w-3 text-blue-400 flex-shrink-0" />
+                        <span className="text-xs text-blue-400 font-medium">{prompt.model_used}</span>
+                      </div>
+                      <p className="text-sm text-white/90 line-clamp-2 mb-1">
+                        {prompt.original_prompt.substring(0, 80)}...
+                      </p>
+                      <p className="text-xs text-white/50">
+                        {new Date(prompt.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePrompt(prompt.id);
+                      }}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
-                <span className="text-xs opacity-50 group-hover:opacity-100">{prompt.date}</span>
-              </button>
-            ))}
+              ))
+            )}
           </div>
         </div>
         
         {/* Main content */}
         <div className="flex-1 p-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold">Prompt Enhancer</h1>
-              <Button className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white hover-glow">
-                <Sparkles className="h-4 w-4 mr-2" /> Upgrade
-              </Button>
-            </div>
-            
-            <div className="bolt-card overflow-hidden">
-              <ChatContainer />
+          <div className="max-w-5xl mx-auto h-full">
+            <div className="bolt-card h-full overflow-hidden">
+              <ChatContainer 
+                activePromptId={activePrompt}
+                onPromptSaved={(prompt) => {
+                  setSavedPrompts(prev => [prompt, ...prev]);
+                  setActivePrompt(prompt.id);
+                  // Refresh user profile to update usage count
+                  if (user) {
+                    fetchUserData(user.id);
+                  }
+                }}
+                userProfile={userProfile}
+              />
             </div>
           </div>
         </div>

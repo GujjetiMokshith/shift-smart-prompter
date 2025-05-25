@@ -9,7 +9,63 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      enhanced_prompts: {
+        Row: {
+          created_at: string | null
+          enhanced_prompt: string
+          id: string
+          model_used: string
+          original_prompt: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          enhanced_prompt: string
+          id?: string
+          model_used: string
+          original_prompt: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          enhanced_prompt?: string
+          id?: string
+          model_used?: string
+          original_prompt?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          plan_type: string | null
+          prompts_used: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          plan_type?: string | null
+          prompts_used?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          plan_type?: string | null
+          prompts_used?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
