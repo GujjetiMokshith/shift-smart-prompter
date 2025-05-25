@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import ChatContainer from "@/components/ChatContainer";
 import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, Trash2 } from "lucide-react";
+import { Plus, FileText, Trash2, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -29,34 +29,84 @@ const Workspace = () => {
   const [savedPrompts, setSavedPrompts] = useState<EnhancedPrompt[]>([]);
   const [activePrompt, setActivePrompt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    // Check authentication
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
+    let isMounted = true;
+
+    const checkAuthAndLoadData = async () => {
+      try {
+        // Check current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          if (isMounted) {
+            toast.error('Authentication error. Please sign in again.');
+            navigate('/');
+          }
+          return;
+        }
+
+        if (!session?.user) {
+          console.log('No authenticated user found, redirecting to home');
+          if (isMounted) {
+            toast.error('Please sign in to access the workspace');
+            navigate('/');
+          }
+          return;
+        }
+
+        if (isMounted) {
+          setUser(session.user);
+          setAuthChecked(true);
+          await fetchUserData(session.user.id);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        if (isMounted) {
+          toast.error('Failed to authenticate. Please try again.');
+          navigate('/');
+        }
+      }
+    };
+
+    checkAuthAndLoadData();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed in workspace:', event, session?.user?.email);
+      
+      if (!session?.user && isMounted) {
+        console.log('User signed out, redirecting to home');
         navigate('/');
         return;
       }
-      setUser(session.user);
-      fetchUserData(session.user.id);
+
+      if (session?.user && isMounted) {
+        setUser(session.user);
+        setAuthChecked(true);
+        if (event === 'SIGNED_IN') {
+          // Defer data fetching to prevent potential issues
+          setTimeout(() => {
+            if (isMounted) {
+              fetchUserData(session.user.id);
+            }
+          }, 100);
+        }
+      }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        navigate('/');
-        return;
-      }
-      setUser(session.user);
-      if (event === 'SIGNED_IN') {
-        fetchUserData(session.user.id);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const fetchUserData = async (userId: string) => {
     try {
+      console.log('Fetching user data for:', userId);
+      
       // Fetch user profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -64,8 +114,30 @@ const Workspace = () => {
         .eq('id', userId)
         .single();
 
-      if (profileError) throw profileError;
-      setUserProfile(profile);
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        // If profile doesn't exist, create it
+        if (profileError.code === 'PGRST116') {
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({ 
+              id: userId, 
+              plan_type: 'free', 
+              prompts_used: 0 
+            });
+          
+          if (insertError) {
+            console.error('Failed to create profile:', insertError);
+            toast.error('Failed to initialize user profile');
+          } else {
+            setUserProfile({ plan_type: 'free', prompts_used: 0 });
+          }
+        } else {
+          toast.error('Failed to load user profile');
+        }
+      } else {
+        setUserProfile(profile);
+      }
 
       // Fetch saved prompts
       const { data: prompts, error: promptsError } = await supabase
@@ -74,8 +146,12 @@ const Workspace = () => {
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-      if (promptsError) throw promptsError;
-      setSavedPrompts(prompts || []);
+      if (promptsError) {
+        console.error('Prompts error:', promptsError);
+        toast.error('Failed to load saved prompts');
+      } else {
+        setSavedPrompts(prompts || []);
+      }
     } catch (error: any) {
       console.error('Error fetching user data:', error);
       toast.error('Failed to load user data');
@@ -120,16 +196,40 @@ const Workspace = () => {
     return `${userProfile.prompts_used} prompts used`;
   };
 
-  if (loading) {
+  // Show loading state while checking authentication
+  if (!authChecked || loading) {
     return (
       <div className="min-h-screen flex flex-col bg-[#050A14] text-white">
         <Header />
         <div className="flex-1 flex items-center justify-center">
           <div className="loading-container">
-            <div className="neo-blur p-8 rounded-2xl">
-              <div className="loading-spinner" />
-              <p className="mt-4 text-blue-400">Loading workspace...</p>
+            <div className="neo-blur p-8 rounded-2xl text-center">
+              <div className="loading-spinner mb-4" />
+              <p className="text-blue-400">Loading workspace...</p>
+              <p className="text-sm text-white/50 mt-2">Authenticating and loading your data</p>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if user is not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#050A14] text-white">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Authentication Required</h2>
+            <p className="text-white/70 mb-6">Please sign in to access your workspace</p>
+            <Button 
+              onClick={() => navigate('/')}
+              className="bg-blue-800 hover:bg-blue-700"
+            >
+              Go to Home
+            </Button>
           </div>
         </div>
       </div>

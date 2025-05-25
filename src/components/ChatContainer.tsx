@@ -35,7 +35,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const [currentEnhancedPrompt, setCurrentEnhancedPrompt] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Groq client
+  // Initialize Groq client with your API key
   const groq = new Groq({ 
     apiKey: "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",
     dangerouslyAllowBrowser: true 
@@ -324,8 +324,12 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
             </div>
             <h3 className="text-2xl font-medium mb-3 text-white">Ready to enhance your prompts?</h3>
             <p className="text-white/70 max-w-md leading-relaxed">
-              Paste your existing prompt below and I'll transform it into a detailed, AI-optimized instruction.
+              Paste your existing prompt below and I'll transform it into a detailed, AI-optimized instruction using Groq's lightning-fast processing.
             </p>
+            <div className="mt-4 text-sm text-green-400 flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              Powered by Groq • Ultra-fast AI inference
+            </div>
           </div>
         ) : (
           <>
@@ -364,7 +368,7 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
             <div className="neo-blur p-10 rounded-2xl flex flex-col items-center">
               <Loader2 className="loading-spinner" />
               <p className="mt-6 text-blue-400 font-medium text-lg">Enhancing your prompt...</p>
-              <p className="text-sm text-white/50 mt-2">This might take a few seconds</p>
+              <p className="text-sm text-white/50 mt-2">Powered by Groq's lightning-fast AI</p>
             </div>
           </div>
         )}
@@ -377,7 +381,7 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
           onChange={handleInputChange}
           onSubmit={handleSendMessage}
           disabled={loading}
-          placeholder="Paste your prompt here to enhance it..."
+          placeholder="Paste your prompt here to enhance it with AI..."
         />
       </div>
       

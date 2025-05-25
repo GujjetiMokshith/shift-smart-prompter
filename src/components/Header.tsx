@@ -19,16 +19,28 @@ interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
 const Header: React.FC<HeaderProps> = ({ className, ...props }) => {
   const [user, setUser] = useState(null);
   const [showAuth, setShowAuth] = useState(false);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
     // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+      } catch (error) {
+        console.error('Error checking session:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkSession();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.email);
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -41,6 +53,7 @@ const Header: React.FC<HeaderProps> = ({ className, ...props }) => {
       toast.success('Signed out successfully');
     } catch (error: any) {
       toast.error('Error signing out');
+      console.error('Sign out error:', error);
     }
   };
 
@@ -90,51 +103,53 @@ const Header: React.FC<HeaderProps> = ({ className, ...props }) => {
             </Link>
           </Button>
           
-          {user ? (
-            <>
+          {!loading && (
+            user ? (
+              <>
+                <Button 
+                  size="sm" 
+                  className="bg-blue-800 hover:bg-blue-700 text-white hover-glow rounded-lg"
+                  asChild
+                >
+                  <Link to="/workspace">
+                    <LayoutGrid className="mr-2 h-4 w-4" />
+                    Workspace
+                  </Link>
+                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-full bg-blue-900/20 hover:bg-blue-900/30 hover-glow-sm w-8 h-8 p-0"
+                    >
+                      <User className="h-4 w-4 text-blue-500" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent 
+                    align="end" 
+                    className="bg-[#030712] border border-white/10 text-white"
+                  >
+                    <DropdownMenuItem 
+                      onClick={handleSignOut}
+                      className="text-red-400 hover:text-red-300 hover:bg-red-900/20 cursor-pointer"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
               <Button 
                 size="sm" 
                 className="bg-blue-800 hover:bg-blue-700 text-white hover-glow rounded-lg"
-                asChild
+                onClick={() => setShowAuth(true)}
               >
-                <Link to="/workspace">
-                  <LayoutGrid className="mr-2 h-4 w-4" />
-                  Workspace
-                </Link>
+                Sign In
               </Button>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-full bg-blue-900/20 hover:bg-blue-900/30 hover-glow-sm w-8 h-8 p-0"
-                  >
-                    <User className="h-4 w-4 text-blue-500" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="end" 
-                  className="bg-[#030712] border border-white/10 text-white"
-                >
-                  <DropdownMenuItem 
-                    onClick={handleSignOut}
-                    className="text-red-400 hover:text-red-300 hover:bg-red-900/20 cursor-pointer"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
-          ) : (
-            <Button 
-              size="sm" 
-              className="bg-blue-800 hover:bg-blue-700 text-white hover-glow rounded-lg"
-              onClick={() => setShowAuth(true)}
-            >
-              Sign In
-            </Button>
+            )
           )}
         </div>
       </header>

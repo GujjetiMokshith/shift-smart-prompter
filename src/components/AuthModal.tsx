@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Zap, Mail, Lock, User } from 'lucide-react';
+import { Zap, Mail, Lock, User, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -16,6 +16,7 @@ interface AuthModalProps {
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -33,7 +34,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           password: formData.password,
         });
         
-        if (error) throw error;
+        if (error) {
+          if (error.message.includes('Email not confirmed')) {
+            toast.error('Please check your email and click the confirmation link before signing in.');
+            return;
+          }
+          throw error;
+        }
         toast.success('Welcome back!');
         onClose();
       } else {
@@ -48,8 +55,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         });
         
         if (error) throw error;
-        toast.success('Account created successfully!');
-        onClose();
+        setEmailSent(true);
+        toast.success('Check your email for the confirmation link!');
       }
     } catch (error: any) {
       toast.error(error.message || 'Authentication failed');
@@ -57,6 +64,46 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       setLoading(false);
     }
   };
+
+  if (emailSent) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md bg-[#030712] border border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-center">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              Check Your Email
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+              <Mail className="h-8 w-8 text-green-500" />
+            </div>
+            <div>
+              <p className="text-white/80 mb-2">
+                We've sent a confirmation link to:
+              </p>
+              <p className="text-blue-400 font-medium">{formData.email}</p>
+            </div>
+            <p className="text-sm text-white/60">
+              Click the link in your email to verify your account and start using PromptShift.
+            </p>
+            <Button 
+              onClick={() => {
+                setEmailSent(false);
+                setIsLogin(true);
+                onClose();
+              }}
+              className="w-full bg-blue-800 hover:bg-blue-700"
+            >
+              Back to Sign In
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
