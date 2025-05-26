@@ -9,6 +9,111 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          city: string | null
+          country_code: string | null
+          created_at: string
+          event_type: Database["public"]["Enums"]["event_type"]
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          page_url: string | null
+          referrer: string | null
+          session_id: string
+          timestamp: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          event_type: Database["public"]["Enums"]["event_type"]
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          page_url?: string | null
+          referrer?: string | null
+          session_id: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          event_type?: Database["public"]["Enums"]["event_type"]
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          page_url?: string | null
+          referrer?: string | null
+          session_id?: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      analytics_summary: {
+        Row: {
+          average_session_duration_seconds: number | null
+          bounce_rate: number | null
+          created_at: string
+          date: string
+          free_plan_users: number | null
+          id: string
+          metadata: Json | null
+          period_type: string
+          pro_plan_users: number | null
+          prompts_enhanced: number | null
+          returning_users: number | null
+          signups_count: number | null
+          total_sessions: number | null
+          total_visits: number | null
+          unique_visitors: number | null
+          upgrades_count: number | null
+        }
+        Insert: {
+          average_session_duration_seconds?: number | null
+          bounce_rate?: number | null
+          created_at?: string
+          date: string
+          free_plan_users?: number | null
+          id?: string
+          metadata?: Json | null
+          period_type: string
+          pro_plan_users?: number | null
+          prompts_enhanced?: number | null
+          returning_users?: number | null
+          signups_count?: number | null
+          total_sessions?: number | null
+          total_visits?: number | null
+          unique_visitors?: number | null
+          upgrades_count?: number | null
+        }
+        Update: {
+          average_session_duration_seconds?: number | null
+          bounce_rate?: number | null
+          created_at?: string
+          date?: string
+          free_plan_users?: number | null
+          id?: string
+          metadata?: Json | null
+          period_type?: string
+          pro_plan_users?: number | null
+          prompts_enhanced?: number | null
+          returning_users?: number | null
+          signups_count?: number | null
+          total_sessions?: number | null
+          total_visits?: number | null
+          unique_visitors?: number | null
+          upgrades_count?: number | null
+        }
+        Relationships: []
+      }
       enhanced_prompts: {
         Row: {
           created_at: string | null
@@ -66,6 +171,215 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_interactions: {
+        Row: {
+          created_at: string
+          enhanced_prompt_length: number | null
+          enhancement_time_seconds: number | null
+          id: string
+          interaction_type: string
+          metadata: Json | null
+          model_used: Database["public"]["Enums"]["model_type"] | null
+          original_prompt_length: number | null
+          prompt_id: string | null
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          enhanced_prompt_length?: number | null
+          enhancement_time_seconds?: number | null
+          id?: string
+          interaction_type: string
+          metadata?: Json | null
+          model_used?: Database["public"]["Enums"]["model_type"] | null
+          original_prompt_length?: number | null
+          prompt_id?: string | null
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          enhanced_prompt_length?: number | null
+          enhancement_time_seconds?: number | null
+          id?: string
+          interaction_type?: string
+          metadata?: Json | null
+          model_used?: Database["public"]["Enums"]["model_type"] | null
+          original_prompt_length?: number | null
+          prompt_id?: string | null
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_interactions_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "enhanced_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tool_engagement: {
+        Row: {
+          created_at: string
+          engagement_duration_seconds: number | null
+          id: string
+          interactions_count: number | null
+          metadata: Json | null
+          session_id: string
+          tool_name: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          engagement_duration_seconds?: number | null
+          id?: string
+          interactions_count?: number | null
+          metadata?: Json | null
+          session_id: string
+          tool_name: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          engagement_duration_seconds?: number | null
+          id?: string
+          interactions_count?: number | null
+          metadata?: Json | null
+          session_id?: string
+          tool_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_feedback: {
+        Row: {
+          created_at: string
+          feedback_type: string
+          id: string
+          message: string | null
+          metadata: Json | null
+          page_url: string | null
+          rating: number | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          feedback_type: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          page_url?: string | null
+          rating?: number | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          feedback_type?: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          page_url?: string | null
+          rating?: number | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_plan_analytics: {
+        Row: {
+          created_at: string
+          downgrade_date: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          plan_type: Database["public"]["Enums"]["plan_type"]
+          signup_date: string | null
+          updated_at: string
+          upgrade_date: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          downgrade_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          plan_type: Database["public"]["Enums"]["plan_type"]
+          signup_date?: string | null
+          updated_at?: string
+          upgrade_date?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          downgrade_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          plan_type?: Database["public"]["Enums"]["plan_type"]
+          signup_date?: string | null
+          updated_at?: string
+          upgrade_date?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          city: string | null
+          country_code: string | null
+          created_at: string
+          duration_seconds: number | null
+          end_time: string | null
+          id: string
+          ip_address: unknown | null
+          is_bounce: boolean | null
+          page_views: number | null
+          referrer: string | null
+          session_id: string
+          start_time: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          end_time?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_bounce?: boolean | null
+          page_views?: number | null
+          referrer?: string | null
+          session_id: string
+          start_time?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          city?: string | null
+          country_code?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          end_time?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_bounce?: boolean | null
+          page_views?: number | null
+          referrer?: string | null
+          session_id?: string
+          start_time?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -74,7 +388,23 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      event_type:
+        | "page_view"
+        | "session_start"
+        | "session_end"
+        | "prompt_edit"
+        | "prompt_save"
+        | "prompt_submit"
+        | "model_selection"
+        | "enhancement_interaction"
+        | "tool_engagement"
+        | "signup"
+        | "upgrade"
+        | "prompt_like"
+        | "prompt_favorite"
+        | "feedback_submit"
+      model_type: "chatgpt" | "claude" | "llama" | "mistral"
+      plan_type: "free_plan" | "pro_plan" | "enterprise_plan"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -189,6 +519,25 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      event_type: [
+        "page_view",
+        "session_start",
+        "session_end",
+        "prompt_edit",
+        "prompt_save",
+        "prompt_submit",
+        "model_selection",
+        "enhancement_interaction",
+        "tool_engagement",
+        "signup",
+        "upgrade",
+        "prompt_like",
+        "prompt_favorite",
+        "feedback_submit",
+      ],
+      model_type: ["chatgpt", "claude", "llama", "mistral"],
+      plan_type: ["free_plan", "pro_plan", "enterprise_plan"],
+    },
   },
 } as const

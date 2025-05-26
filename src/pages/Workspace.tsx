@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import ChatContainer from "@/components/ChatContainer";
@@ -8,6 +7,7 @@ import { Plus, FileText, Trash2, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 interface EnhancedPrompt {
   id: string;
@@ -24,6 +24,7 @@ interface UserProfile {
 
 const Workspace = () => {
   const navigate = useNavigate();
+  const analytics = useAnalytics();
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [savedPrompts, setSavedPrompts] = useState<EnhancedPrompt[]>([]);
@@ -61,6 +62,9 @@ const Workspace = () => {
           setUser(session.user);
           setAuthChecked(true);
           await fetchUserData(session.user.id);
+          
+          // Track workspace access
+          analytics.trackToolEngagement('workspace', undefined, 1);
         }
       } catch (error) {
         console.error('Auth check error:', error);
@@ -101,7 +105,7 @@ const Workspace = () => {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, analytics]);
 
   const fetchUserData = async (userId: string) => {
     try {
@@ -174,10 +178,25 @@ const Workspace = () => {
         setActivePrompt(null);
       }
       toast.success('Prompt deleted successfully');
+      
+      // Track prompt deletion
+      analytics.trackToolEngagement('prompt_history', undefined, 1);
     } catch (error: any) {
       console.error('Error deleting prompt:', error);
       toast.error('Failed to delete prompt');
     }
+  };
+
+  const handleNewPrompt = () => {
+    setActivePrompt(null);
+    // Track new prompt creation
+    analytics.trackToolEngagement('prompt_editor', undefined, 1);
+  };
+
+  const handlePromptSelect = (promptId: string) => {
+    setActivePrompt(promptId);
+    // Track prompt viewing
+    analytics.trackToolEngagement('prompt_history', undefined, 1);
   };
 
   const canCreateNewPrompt = () => {
@@ -255,7 +274,7 @@ const Workspace = () => {
               !canCreateNewPrompt() ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             disabled={!canCreateNewPrompt()}
-            onClick={() => setActivePrompt(null)}
+            onClick={handleNewPrompt}
           >
             <Plus className="h-4 w-4 mr-2" /> New Enhancement
           </Button>
@@ -284,7 +303,7 @@ const Workspace = () => {
                       ? "bg-blue-800/20 border border-blue-600/30" 
                       : "hover:bg-white/5 border border-transparent"
                   }`}
-                  onClick={() => setActivePrompt(prompt.id)}
+                  onClick={() => handlePromptSelect(prompt.id)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
@@ -330,6 +349,13 @@ const Workspace = () => {
                   if (user) {
                     fetchUserData(user.id);
                   }
+                  // Track prompt save
+                  analytics.trackPromptSave({
+                    prompt_id: prompt.id,
+                    model_used: prompt.model_used,
+                    original_prompt_length: prompt.original_prompt.length,
+                    enhanced_prompt_length: prompt.enhanced_prompt.length
+                  });
                 }}
                 userProfile={userProfile}
               />
