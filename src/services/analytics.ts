@@ -13,17 +13,31 @@ if (!sessionId) {
   localStorage.setItem('promptshift_session_id', sessionId);
 }
 
+// Type definitions to match database enums
+type EventType = 
+  | 'page_view'
+  | 'session_start'
+  | 'session_end'
+  | 'prompt_edit'
+  | 'prompt_save'
+  | 'prompt_submit'
+  | 'model_selection'
+  | 'enhancement_interaction'
+  | 'tool_engagement'
+  | 'signup'
+  | 'upgrade'
+  | 'prompt_like'
+  | 'prompt_favorite'
+  | 'feedback_submit';
+
+type ModelType = 'chatgpt' | 'claude' | 'llama' | 'mistral';
+type PlanType = 'free_plan' | 'pro_plan' | 'enterprise_plan';
+
 interface AnalyticsEvent {
-  event_type: string;
+  event_type: EventType;
   page_url?: string;
   referrer?: string;
   metadata?: Record<string, any>;
-}
-
-interface SessionData {
-  start_time?: string;
-  referrer?: string;
-  user_agent?: string;
 }
 
 export class AnalyticsService {
@@ -105,10 +119,15 @@ export class AnalyticsService {
   }
 
   async trackPromptInteraction(type: 'edit' | 'save' | 'submit' | 'like' | 'favorite', metadata: Record<string, any> = {}) {
-    const eventType = type === 'edit' ? 'prompt_edit' : 
-                     type === 'save' ? 'prompt_save' : 
-                     type === 'submit' ? 'prompt_submit' :
-                     type === 'like' ? 'prompt_like' : 'prompt_favorite';
+    const eventTypeMap: Record<string, EventType> = {
+      'edit': 'prompt_edit',
+      'save': 'prompt_save',
+      'submit': 'prompt_submit',
+      'like': 'prompt_like',
+      'favorite': 'prompt_favorite'
+    };
+
+    const eventType = eventTypeMap[type];
 
     await this.trackEvent({
       event_type: eventType,
@@ -128,7 +147,7 @@ export class AnalyticsService {
             session_id: this.sessionId,
             prompt_id: metadata.prompt_id || null,
             interaction_type: type,
-            model_used: metadata.model_used || null,
+            model_used: metadata.model_used as ModelType || null,
             original_prompt_length: metadata.original_prompt_length || null,
             enhanced_prompt_length: metadata.enhanced_prompt_length || null,
             enhancement_time_seconds: metadata.enhancement_time_seconds || null,
@@ -177,7 +196,7 @@ export class AnalyticsService {
     }
   }
 
-  async trackSignup(planType: 'free_plan' | 'pro_plan' | 'enterprise_plan') {
+  async trackSignup(planType: PlanType) {
     await this.trackEvent({
       event_type: 'signup',
       metadata: {
