@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useRef } from "react";
 import Header from "@/components/Header";
 import ChatContainer from "@/components/ChatContainer";
 import { Toaster } from "sonner";
@@ -31,6 +32,9 @@ const Workspace = () => {
   const [activePrompt, setActivePrompt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
+  
+  // Use ref to prevent multiple simultaneous fetches
+  const fetchingRef = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -61,7 +65,11 @@ const Workspace = () => {
         if (isMounted) {
           setUser(session.user);
           setAuthChecked(true);
-          await fetchUserData(session.user.id);
+          
+          // Only fetch data if not already fetching
+          if (!fetchingRef.current) {
+            await fetchUserData(session.user.id);
+          }
           
           // Track workspace access
           analytics.trackToolEngagement('workspace', undefined, 1);
@@ -90,14 +98,7 @@ const Workspace = () => {
       if (session?.user && isMounted) {
         setUser(session.user);
         setAuthChecked(true);
-        if (event === 'SIGNED_IN') {
-          // Defer data fetching to prevent potential issues
-          setTimeout(() => {
-            if (isMounted) {
-              fetchUserData(session.user.id);
-            }
-          }, 100);
-        }
+        // Don't fetch data on auth state changes to prevent loops
       }
     });
 
@@ -108,6 +109,14 @@ const Workspace = () => {
   }, [navigate, analytics]);
 
   const fetchUserData = async (userId: string) => {
+    // Prevent multiple simultaneous fetches
+    if (fetchingRef.current) {
+      console.log('Fetch already in progress, skipping...');
+      return;
+    }
+    
+    fetchingRef.current = true;
+    
     try {
       console.log('Fetching user data for:', userId);
       
@@ -161,6 +170,7 @@ const Workspace = () => {
       toast.error('Failed to load user data');
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
     }
   };
 
@@ -213,6 +223,12 @@ const Workspace = () => {
       return `${userProfile.prompts_used}/5 prompts used today`;
     }
     return `${userProfile.prompts_used} prompts used`;
+  };
+
+  const refreshUserData = async () => {
+    if (user && !fetchingRef.current) {
+      await fetchUserData(user.id);
+    }
   };
 
   // Show loading state while checking authentication
@@ -346,9 +362,7 @@ const Workspace = () => {
                   setSavedPrompts(prev => [prompt, ...prev]);
                   setActivePrompt(prompt.id);
                   // Refresh user profile to update usage count
-                  if (user) {
-                    fetchUserData(user.id);
-                  }
+                  refreshUserData();
                   // Track prompt save
                   analytics.trackPromptSave({
                     prompt_id: prompt.id,
