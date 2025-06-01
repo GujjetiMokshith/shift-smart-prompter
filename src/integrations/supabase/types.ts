@@ -114,6 +114,36 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_instructions: {
+        Row: {
+          created_at: string | null
+          id: string
+          instructions: string
+          is_active: boolean | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          instructions: string
+          is_active?: boolean | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          instructions?: string
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       enhanced_prompts: {
         Row: {
           created_at: string | null
@@ -137,6 +167,30 @@ export type Database = {
           id?: string
           model_used?: string
           original_prompt?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      onboarding_responses: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          responses: Json
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          responses?: Json
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          responses?: Json
           user_id?: string
         }
         Relationships: []
@@ -220,6 +274,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      security_settings: {
+        Row: {
+          id: string
+          is_enabled: boolean
+          last_updated: string | null
+          notes: string | null
+          setting_name: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          is_enabled?: boolean
+          last_updated?: string | null
+          notes?: string | null
+          setting_name: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          is_enabled?: boolean
+          last_updated?: string | null
+          notes?: string | null
+          setting_name?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       tool_engagement: {
         Row: {
@@ -329,6 +410,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_sessions: {
         Row: {
           city: string | null
@@ -385,7 +487,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      ensure_admin_role: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      get_user_role: {
+        Args: { check_user_id: string }
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      update_user_plan_analytics: {
+        Args: {
+          user_id: string
+          new_plan: Database["public"]["Enums"]["plan_type"]
+          is_upgrade: boolean
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       event_type:
@@ -405,6 +526,7 @@ export type Database = {
         | "feedback_submit"
       model_type: "chatgpt" | "claude" | "llama" | "mistral"
       plan_type: "free_plan" | "pro_plan" | "enterprise_plan"
+      user_role: "user" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -538,6 +660,7 @@ export const Constants = {
       ],
       model_type: ["chatgpt", "claude", "llama", "mistral"],
       plan_type: ["free_plan", "pro_plan", "enterprise_plan"],
+      user_role: ["user", "admin"],
     },
   },
 } as const
