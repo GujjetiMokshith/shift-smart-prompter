@@ -1,11 +1,9 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Zap, Mail, Lock, User, CheckCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface AuthModalProps {
@@ -28,38 +26,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
+      // Simulate authentication
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
-        
-        if (error) {
-          if (error.message.includes('Email not confirmed')) {
-            toast.error('Please check your email and click the confirmation link before signing in.');
-            return;
-          }
-          throw error;
-        }
         toast.success('Welcome back!');
         onClose();
       } else {
-        const { error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            data: {
-              full_name: formData.fullName,
-            },
-          },
-        });
-        
-        if (error) throw error;
         setEmailSent(true);
-        toast.success('Check your email for the confirmation link!');
+        toast.success('Account created successfully!');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Authentication failed');
+      toast.error('Authentication failed');
     } finally {
       setLoading(false);
     }
@@ -72,7 +50,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-center">
               <CheckCircle className="h-5 w-5 text-green-500" />
-              Check Your Email
+              Account Created
             </DialogTitle>
           </DialogHeader>
           
@@ -82,12 +60,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </div>
             <div>
               <p className="text-white/80 mb-2">
-                We've sent a confirmation link to:
+                Account created for:
               </p>
               <p className="text-blue-400 font-medium">{formData.email}</p>
             </div>
             <p className="text-sm text-white/60">
-              Click the link in your email to verify your account and start using PromptShift.
+              You can now start using PromptShift!
             </p>
             <Button 
               onClick={() => {
