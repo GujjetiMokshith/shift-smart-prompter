@@ -14,7 +14,7 @@ export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }
       analytics.setUserId(session?.user?.id || null);
       
       if (event === 'SIGNED_IN' && session?.user) {
-        analytics.trackSignup('free_plan'); // Default to free plan on signup
+        analytics.trackSignup('free_service'); // Track as free service signup
       }
     });
 

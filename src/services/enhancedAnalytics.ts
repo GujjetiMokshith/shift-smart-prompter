@@ -48,11 +48,10 @@ export class EnhancedAnalytics {
 
       // Update user prompt usage if user is logged in
       if (data.userId) {
-        // Use a simple update instead of raw SQL
         const { error: updateError } = await supabase
           .from('profiles')
           .update({ 
-            prompts_used: 1, // This will be handled by a database function
+            prompts_used: supabase.raw('prompts_used + 1'),
             updated_at: new Date().toISOString()
           })
           .eq('id', data.userId);

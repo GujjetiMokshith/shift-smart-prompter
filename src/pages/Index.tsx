@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, Zap, Check, Star, Rocket, Shield, Clock, Users, Brain, Target, TrendingUp, Cpu, Layers } from "lucide-react";
+import { ArrowRight, Sparkles, Zap, Check, Star, Rocket, Shield, Clock, Users, Brain, Target, TrendingUp, Cpu, Layers, Coffee } from "lucide-react";
 import ChatInput from "@/components/ChatInput";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -75,68 +75,10 @@ const Index = () => {
     },
     {
       icon: Users,
-      title: "Team Collaboration",
-      description: "Share enhanced prompts with your team and build a library of effective instructions.",
-      highlight: "Pro & Enterprise",
-      stats: "Used by 500+ teams"
-    }
-  ];
-
-  const pricingPlans = [
-    {
-      name: "Free",
-      price: "$0",
-      period: "forever",
-      description: "Perfect for getting started",
-      features: [
-        "5 prompt enhancements per day",
-        "Access to Llama 3.3 model",
-        "Basic enhancement templates",
-        "Community support",
-        "Export to text format"
-      ],
-      popular: false,
-      cta: "Get Started Free",
-      badge: "Most Popular for Beginners"
-    },
-    {
-      name: "Pro", 
-      price: "$19",
-      period: "month",
-      description: "For power users and professionals",
-      features: [
-        "Unlimited prompt enhancements",
-        "Access to all premium AI models",
-        "Priority processing speed",
-        "Custom enhancement templates",
-        "Advanced export options (JSON, CSV)",
-        "Prompt history & search",
-        "Email support",
-        "API access (beta)"
-      ],
-      popular: true,
-      cta: "Start Pro Trial",
-      badge: "Best Value"
-    },
-    {
-      name: "Enterprise",
-      price: "$99", 
-      period: "month",
-      description: "For teams and organizations",
-      features: [
-        "Everything in Pro",
-        "Team collaboration features",
-        "Full API access for integrations",
-        "Custom AI model fine-tuning",
-        "Advanced analytics dashboard",
-        "Dedicated account manager",
-        "SLA guarantees & priority support",
-        "Custom deployment options",
-        "SAML/SSO integration"
-      ],
-      popular: false,
-      cta: "Contact Sales",
-      badge: "Enterprise Grade"
+      title: "Community Driven",
+      description: "Share enhanced prompts with the community and build a library of effective instructions.",
+      highlight: "Free & Open",
+      stats: "Used by 500+ creators"
     }
   ];
 
@@ -208,7 +150,7 @@ const Index = () => {
               </h1>
               <p className="text-xl md:text-2xl text-white/70 max-w-4xl mx-auto leading-relaxed">
                 Turn basic prompts into detailed, AI-optimized instructions that get better results from any language model. 
-                Powered by Groq's lightning-fast inference with enterprise-grade security.
+                Powered by Groq's lightning-fast inference with enterprise-grade security. <strong>Completely free to use!</strong>
               </p>
             </div>
             
@@ -248,7 +190,7 @@ const Index = () => {
                 { number: "50,000+", label: "Prompts Enhanced" },
                 { number: "300%", label: "Better Results" },
                 { number: "<3s", label: "Processing Time" },
-                { number: "99.9%", label: "Uptime" }
+                { number: "100%", label: "Free Forever" }
               ].map((stat, index) => (
                 <div key={index} className="text-center">
                   <div className="text-3xl font-bold text-gradient-blue">{stat.number}</div>
@@ -298,7 +240,7 @@ const Index = () => {
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gradient-blue">Why Choose PromptShift?</h2>
               <p className="text-xl text-white/70 max-w-3xl mx-auto">
-                Experience the power of AI-enhanced prompting with cutting-edge features designed for professionals
+                Experience the power of AI-enhanced prompting with cutting-edge features - completely free
               </p>
             </div>
             
@@ -364,71 +306,41 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Pricing Section */}
+        {/* Support Section */}
         <section className="py-24 px-4 bg-[#030712]/50">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gradient-blue">Simple, Transparent Pricing</h2>
-              <p className="text-xl text-white/70 max-w-3xl mx-auto">
-                Choose the plan that fits your needs. Start free and upgrade as you grow.
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="bolt-card p-12 hover-border-glow">
+              <div className="w-16 h-16 bg-amber-800/20 rounded-full flex items-center justify-center mb-6 mx-auto glow-amber-sm">
+                <Coffee className="h-8 w-8 text-amber-400" />
+              </div>
+              <h2 className="text-4xl font-bold mb-6 text-gradient-blue">
+                Support Our Mission
+              </h2>
+              <p className="text-xl text-white/70 mb-8 max-w-2xl mx-auto">
+                PromptShift is completely free to use. If you find it valuable, consider buying us a coffee to help keep the service running and support future development.
               </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              {pricingPlans.map((plan, index) => (
-                <div 
-                  key={plan.name}
-                  className={`bolt-card p-8 hover-border-glow hover-scale transition-all duration-300 relative ${
-                    plan.popular ? 'border-blue-600/50 glow-blue scale-105' : ''
-                  }`}
-                  style={{animationDelay: `${index * 0.1}s`}}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  size="lg"
+                  className="bg-gradient-to-r from-amber-600 to-amber-800 hover:from-amber-700 hover:to-amber-900 text-white hover-glow px-8"
+                  onClick={() => window.open('https://buymeacoffee.com/promptshift', '_blank')}
                 >
-                  {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                        <Star className="h-3 w-3" />
-                        {plan.badge}
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold mb-2 text-white">{plan.name}</h3>
-                    <div className="mb-3">
-                      <span className="text-5xl font-bold text-gradient-blue">{plan.price}</span>
-                      <span className="text-white/60">/{plan.period}</span>
-                    </div>
-                    <p className="text-white/70">{plan.description}</p>
-                    {!plan.popular && (
-                      <div className="mt-2">
-                        <span className="text-xs bg-gray-800/50 text-gray-400 px-2 py-1 rounded-full">
-                          {plan.badge}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <ul className="space-y-4 mb-8">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start gap-3 text-white/80">
-                        <Check className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <Button 
-                    className={`w-full ${
-                      plan.popular 
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900' 
-                        : 'bg-blue-900/30 hover:bg-blue-900/50'
-                    } text-white hover-glow transition-all duration-300`}
-                    onClick={() => !user && setShowAuth(true)}
-                  >
-                    {plan.cta}
-                  </Button>
-                </div>
-              ))}
+                  <Coffee className="mr-2 h-5 w-5" />
+                  Buy Us a Coffee
+                </Button>
+                <Button 
+                  size="lg"
+                  variant="outline"
+                  className="border-white/20 text-white hover:bg-white/5"
+                  onClick={() => !user && setShowAuth(true)}
+                >
+                  Start Using Free
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </div>
+              <p className="text-sm text-white/50 mt-6">
+                Your support helps us maintain servers, improve AI models, and add new features
+              </p>
             </div>
           </div>
         </section>
@@ -441,7 +353,7 @@ const Index = () => {
                 Ready to Transform Your AI Results?
               </h2>
               <p className="text-xl text-white/70 mb-8 max-w-2xl mx-auto">
-                Join thousands of professionals who've already improved their AI workflow with PromptShift
+                Join thousands of professionals who've already improved their AI workflow with PromptShift - completely free!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
@@ -479,7 +391,7 @@ const Index = () => {
               </div>
               <p className="text-white/60 leading-relaxed mb-6">
                 Transform your prompts with AI-powered enhancement for better results across all language models. 
-                Built for professionals who demand excellence.
+                Built for professionals, free for everyone.
               </p>
               <div className="flex space-x-4">
                 <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-white/10 cursor-pointer transition-colors">
@@ -515,7 +427,10 @@ const Index = () => {
               <h4 className="font-semibold mb-4 text-white">Support</h4>
               <ul className="space-y-3 text-white/60">
                 <li><a href="#" className="hover:text-blue-400 transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Contact Sales</a></li>
+                <li><a href="https://buymeacoffee.com/promptshift" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors flex items-center gap-1">
+                  <Coffee className="h-3 w-3" />
+                  Buy Us Coffee
+                </a></li>
                 <li><a href="#" className="hover:text-blue-400 transition-colors">Community</a></li>
                 <li><a href="#" className="hover:text-blue-400 transition-colors">Status Page</a></li>
               </ul>
@@ -523,7 +438,7 @@ const Index = () => {
           </div>
           
           <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-white/40">
-            <p>© 2025 PromptShift. All rights reserved.</p>
+            <p>© 2025 PromptShift. All rights reserved. Free forever.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link to="/privacy" className="hover:text-blue-400 transition-colors">Privacy Policy</Link>
               <Link to="/terms" className="hover:text-blue-400 transition-colors">Terms of Service</Link>

@@ -9,7 +9,7 @@ interface SessionData {
   isActive: boolean;
 }
 
-type EventType = 'page_view' | 'session_start' | 'session_end' | 'prompt_edit' | 'prompt_save' | 'prompt_submit' | 'model_selection' | 'enhancement_interaction' | 'tool_engagement' | 'signup' | 'upgrade' | 'prompt_like' | 'prompt_favorite' | 'feedback_submit' | 'onboarding_completed';
+type EventType = 'page_view' | 'session_start' | 'session_end' | 'prompt_edit' | 'prompt_save' | 'prompt_submit' | 'model_selection' | 'enhancement_interaction' | 'tool_engagement' | 'signup' | 'upgrade' | 'prompt_like' | 'prompt_favorite' | 'feedback_submit' | 'onboarding_completed' | 'prompt_enhancement';
 
 class SessionTracker {
   private sessionData: SessionData | null = null;
@@ -190,7 +190,7 @@ class SessionTracker {
       const eventRecord = {
         session_id: this.sessionData.sessionId,
         user_id: user?.id || null,
-        event_type: dbEventType,
+        event_type: dbEventType as any, // Type assertion to handle the enum
         page_url: window.location.href,
         referrer: document.referrer || null,
         user_agent: navigator.userAgent,

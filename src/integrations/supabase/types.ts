@@ -201,7 +201,6 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
-          plan_type: string | null
           prompts_used: number | null
           updated_at: string | null
         }
@@ -210,7 +209,6 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
-          plan_type?: string | null
           prompts_used?: number | null
           updated_at?: string | null
         }
@@ -219,7 +217,6 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
-          plan_type?: string | null
           prompts_used?: number | null
           updated_at?: string | null
         }
@@ -371,45 +368,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_plan_analytics: {
-        Row: {
-          created_at: string
-          downgrade_date: string | null
-          id: string
-          is_active: boolean | null
-          metadata: Json | null
-          plan_type: Database["public"]["Enums"]["plan_type"]
-          signup_date: string | null
-          updated_at: string
-          upgrade_date: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          downgrade_date?: string | null
-          id?: string
-          is_active?: boolean | null
-          metadata?: Json | null
-          plan_type: Database["public"]["Enums"]["plan_type"]
-          signup_date?: string | null
-          updated_at?: string
-          upgrade_date?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          downgrade_date?: string | null
-          id?: string
-          is_active?: boolean | null
-          metadata?: Json | null
-          plan_type?: Database["public"]["Enums"]["plan_type"]
-          signup_date?: string | null
-          updated_at?: string
-          upgrade_date?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -499,14 +457,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      update_user_plan_analytics: {
-        Args: {
-          user_id: string
-          new_plan: Database["public"]["Enums"]["plan_type"]
-          is_upgrade: boolean
-        }
-        Returns: undefined
-      }
     }
     Enums: {
       event_type:
@@ -525,7 +475,6 @@ export type Database = {
         | "prompt_favorite"
         | "feedback_submit"
       model_type: "chatgpt" | "claude" | "llama" | "mistral"
-      plan_type: "free_plan" | "pro_plan" | "enterprise_plan"
       user_role: "user" | "admin"
     }
     CompositeTypes: {
@@ -659,7 +608,6 @@ export const Constants = {
         "feedback_submit",
       ],
       model_type: ["chatgpt", "claude", "llama", "mistral"],
-      plan_type: ["free_plan", "pro_plan", "enterprise_plan"],
       user_role: ["user", "admin"],
     },
   },
