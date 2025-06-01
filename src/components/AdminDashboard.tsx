@@ -50,6 +50,7 @@ interface UserProfile {
   last_sign_in_at?: string;
   role?: string;
   onboarding_completed?: boolean;
+  user_roles?: Array<{ role: string }>;
 }
 
 interface OnboardingResponse {
@@ -57,7 +58,7 @@ interface OnboardingResponse {
   user_id: string;
   responses: any;
   completed_at: string;
-  email: string;
+  user_email?: string;
 }
 
 const AdminDashboard: React.FC = () => {
@@ -91,15 +92,28 @@ const AdminDashboard: React.FC = () => {
 
       if (usersError) throw usersError;
 
-      // Load onboarding responses
-      const { data: onboardingData, error: onboardingError } = await supabase
+      // Load onboarding responses with user data
+      const { data: onboardingRawData, error: onboardingError } = await supabase
         .from('onboarding_responses')
-        .select(`
-          *,
-          profiles(email)
-        `);
+        .select('*');
 
       if (onboardingError) throw onboardingError;
+
+      // Get user emails for onboarding data
+      const onboardingWithEmails = await Promise.all(
+        (onboardingRawData || []).map(async (response) => {
+          const { data: userProfile } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', response.user_id)
+            .single();
+          
+          return {
+            ...response,
+            user_email: userProfile?.email || 'Unknown'
+          };
+        })
+      );
 
       // Load session statistics
       const { data: sessionStats, error: sessionError } = await supabase
@@ -127,7 +141,7 @@ const AdminDashboard: React.FC = () => {
         : 0;
 
       const onboardingCompletionRate = totalUsers > 0 
-        ? Math.round((onboardingData?.length || 0) / totalUsers * 100)
+        ? Math.round((onboardingWithEmails?.length || 0) / totalUsers * 100)
         : 0;
 
       setStats({
@@ -142,19 +156,14 @@ const AdminDashboard: React.FC = () => {
       // Process users data
       const processedUsers = usersData?.map(user => ({
         ...user,
-        role: user.user_roles?.[0]?.role || 'user',
-        onboarding_completed: onboardingData?.some(o => o.user_id === user.id)
+        role: Array.isArray(user.user_roles) && user.user_roles.length > 0 
+          ? user.user_roles[0].role 
+          : 'user',
+        onboarding_completed: onboardingWithEmails?.some(o => o.user_id === user.id)
       })) || [];
 
       setUsers(processedUsers);
-
-      // Process onboarding data
-      const processedOnboarding = onboardingData?.map(item => ({
-        ...item,
-        email: item.profiles?.email || 'Unknown'
-      })) || [];
-
-      setOnboardingData(processedOnboarding);
+      setOnboardingData(onboardingWithEmails);
 
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -353,7 +362,7 @@ const AdminDashboard: React.FC = () => {
                   <Card key={response.id} className="bg-[#060B16] border-white/10">
                     <CardHeader>
                       <div className="flex justify-between items-center">
-                        <CardTitle className="text-sm">{response.email}</CardTitle>
+                        <CardTitle className="text-sm">{response.user_email}</CardTitle>
                         <span className="text-xs text-white/50">
                           {new Date(response.completed_at).toLocaleDateString()}
                         </span>

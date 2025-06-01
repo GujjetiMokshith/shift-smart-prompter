@@ -9,6 +9,8 @@ interface SessionData {
   isActive: boolean;
 }
 
+type EventType = 'page_view' | 'session_start' | 'session_end' | 'prompt_edit' | 'prompt_save' | 'prompt_submit' | 'model_selection' | 'enhancement_interaction' | 'tool_engagement' | 'signup' | 'upgrade' | 'prompt_like' | 'prompt_favorite' | 'feedback_submit' | 'prompt_enhancement' | 'onboarding_completed';
+
 class SessionTracker {
   private sessionData: SessionData | null = null;
   private activityTimer: NodeJS.Timeout | null = null;
@@ -176,7 +178,7 @@ class SessionTracker {
     }
   }
 
-  public async trackEvent(eventType: string, metadata?: Record<string, any>) {
+  public async trackEvent(eventType: EventType, metadata?: Record<string, any>) {
     if (!this.sessionData) return;
 
     try {

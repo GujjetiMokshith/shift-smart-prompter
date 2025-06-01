@@ -46,11 +46,15 @@ export class EnhancedAnalytics {
         improvement_ratio: data.enhancedPrompt.length / data.originalPrompt.length
       });
 
-      // Update user prompt usage
+      // Update user prompt usage if user is logged in
       if (data.userId) {
-        const { error: updateError } = await supabase.rpc('increment_user_prompts', {
-          user_id: data.userId
-        });
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ 
+            prompts_used: supabase.raw('prompts_used + 1'),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', data.userId);
 
         if (updateError) {
           console.error('Error updating user prompt count:', updateError);
@@ -130,7 +134,7 @@ export class EnhancedAnalytics {
 
   // Track user journey milestones
   async trackMilestone(milestone: string, metadata?: Record<string, any>) {
-    await sessionTracker.trackEvent('milestone', {
+    await sessionTracker.trackEvent('signup', {
       milestone_name: milestone,
       session_duration: sessionTracker.getSessionDuration(),
       ...metadata

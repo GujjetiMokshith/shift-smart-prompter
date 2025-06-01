@@ -7,7 +7,6 @@ import ChatContainer from '@/components/ChatContainer';
 import InfoPanel from '@/components/InfoPanel';
 import OnboardingModal from '@/components/OnboardingModal';
 import CustomInstructions from '@/components/CustomInstructions';
-import SettingsModal from '@/components/SettingsModal';
 import { Toaster } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { sessionTracker } from '@/services/sessionTracker';
@@ -17,7 +16,6 @@ const Workspace = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     checkAuthAndOnboarding();
@@ -120,7 +118,7 @@ const Workspace = () => {
               <div className="flex-1">
                 <ChatContainer />
               </div>
-              <InfoPanel onOpenSettings={() => setShowSettings(true)} />
+              <InfoPanel />
             </TabsContent>
             
             <TabsContent value="instructions" className="flex-1 m-0 p-6">
@@ -133,11 +131,6 @@ const Workspace = () => {
       <OnboardingModal 
         isOpen={showOnboarding} 
         onComplete={handleOnboardingComplete} 
-      />
-      
-      <SettingsModal 
-        isOpen={showSettings} 
-        onClose={() => setShowSettings(false)} 
       />
       
       <Toaster position="bottom-right" />
