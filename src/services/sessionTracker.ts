@@ -9,7 +9,7 @@ interface SessionData {
   isActive: boolean;
 }
 
-type EventType = 'page_view' | 'session_start' | 'session_end' | 'prompt_edit' | 'prompt_save' | 'prompt_submit' | 'model_selection' | 'enhancement_interaction' | 'tool_engagement' | 'signup' | 'upgrade' | 'prompt_like' | 'prompt_favorite' | 'feedback_submit' | 'prompt_enhancement' | 'onboarding_completed';
+type EventType = 'page_view' | 'session_start' | 'session_end' | 'prompt_edit' | 'prompt_save' | 'prompt_submit' | 'model_selection' | 'enhancement_interaction' | 'tool_engagement' | 'signup' | 'upgrade' | 'prompt_like' | 'prompt_favorite' | 'feedback_submit' | 'onboarding_completed';
 
 class SessionTracker {
   private sessionData: SessionData | null = null;
@@ -184,10 +184,13 @@ class SessionTracker {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
+      // Map event types to database-compatible values
+      const dbEventType = this.mapEventTypeToDatabase(eventType);
+
       const eventRecord = {
         session_id: this.sessionData.sessionId,
         user_id: user?.id || null,
-        event_type: eventType,
+        event_type: dbEventType,
         page_url: window.location.href,
         referrer: document.referrer || null,
         user_agent: navigator.userAgent,
@@ -205,6 +208,16 @@ class SessionTracker {
     } catch (error) {
       console.error('Error tracking event:', error);
     }
+  }
+
+  private mapEventTypeToDatabase(eventType: EventType): string {
+    // Map custom event types to database-compatible values
+    const eventMap: Record<string, string> = {
+      'onboarding_completed': 'signup',
+      'prompt_enhancement': 'enhancement_interaction'
+    };
+
+    return eventMap[eventType] || eventType;
   }
 
   private async endSession() {

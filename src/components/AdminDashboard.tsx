@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -50,7 +49,6 @@ interface UserProfile {
   last_sign_in_at?: string;
   role?: string;
   onboarding_completed?: boolean;
-  user_roles?: Array<{ role: string }>;
 }
 
 interface OnboardingResponse {
@@ -81,16 +79,23 @@ const AdminDashboard: React.FC = () => {
 
   const loadDashboardData = async () => {
     try {
-      // Load users with roles
+      // Load users first
       const { data: usersData, error: usersError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          user_roles(role)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (usersError) throw usersError;
+
+      // Load user roles separately
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) {
+        console.error('Error loading roles:', rolesError);
+        // Continue without roles if there's an error
+      }
 
       // Load onboarding responses with user data
       const { data: onboardingRawData, error: onboardingError } = await supabase
@@ -153,14 +158,19 @@ const AdminDashboard: React.FC = () => {
         onboarding_completion_rate: onboardingCompletionRate
       });
 
-      // Process users data
-      const processedUsers = usersData?.map(user => ({
-        ...user,
-        role: Array.isArray(user.user_roles) && user.user_roles.length > 0 
-          ? user.user_roles[0].role 
-          : 'user',
-        onboarding_completed: onboardingWithEmails?.some(o => o.user_id === user.id)
-      })) || [];
+      // Process users data and merge with roles
+      const processedUsers: UserProfile[] = (usersData || []).map(user => {
+        const userRole = rolesData?.find(role => role.user_id === user.id);
+        return {
+          ...user,
+          email: user.email || '',
+          full_name: user.full_name || '',
+          plan_type: user.plan_type || 'free',
+          prompts_used: user.prompts_used || 0,
+          role: userRole?.role || 'user',
+          onboarding_completed: onboardingWithEmails?.some(o => o.user_id === user.id)
+        };
+      });
 
       setUsers(processedUsers);
       setOnboardingData(onboardingWithEmails);
