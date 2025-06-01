@@ -1,6 +1,7 @@
 
 import { useEffect } from 'react';
 import { analytics } from '@/services/analytics';
+import { enhancedAnalytics } from '@/services/enhancedAnalytics';
 import { useLocation } from 'react-router-dom';
 
 export const useAnalytics = () => {
@@ -8,38 +9,39 @@ export const useAnalytics = () => {
 
   useEffect(() => {
     // Track page view on route change
-    analytics.trackPageView();
+    analytics.trackPageView(location.pathname);
   }, [location.pathname]);
 
   return {
     trackPromptEdit: (metadata?: Record<string, any>) => 
-      analytics.trackPromptInteraction('edit', metadata),
+      analytics.trackEvent('prompt_edit', metadata),
     
     trackPromptSave: (metadata?: Record<string, any>) => 
-      analytics.trackPromptInteraction('save', metadata),
+      analytics.trackEvent('prompt_save', metadata),
     
     trackPromptSubmit: (metadata?: Record<string, any>) => 
-      analytics.trackPromptInteraction('submit', metadata),
+      analytics.trackEvent('prompt_submit', metadata),
     
     trackPromptLike: (metadata?: Record<string, any>) => 
-      analytics.trackPromptInteraction('like', metadata),
+      analytics.trackEvent('prompt_like', metadata),
     
     trackPromptFavorite: (metadata?: Record<string, any>) => 
-      analytics.trackPromptInteraction('favorite', metadata),
+      analytics.trackEvent('prompt_favorite', metadata),
     
     trackModelSelection: (model: string) => 
-      analytics.trackModelSelection(model),
+      enhancedAnalytics.trackModelSelection(model),
     
     trackToolEngagement: (toolName: string, duration?: number, interactions?: number) => 
-      analytics.trackToolEngagement(toolName, duration, interactions),
+      enhancedAnalytics.trackToolEngagement(toolName, duration || 0, interactions || 1),
     
     trackFeedback: (type: string, rating?: number, message?: string) => 
-      analytics.trackFeedback(type, rating, message),
+      analytics.trackUserFeedback(type, rating, message),
     
-    trackSignup: (planType: 'free_plan' | 'pro_plan' | 'enterprise_plan') => 
-      analytics.trackSignup(planType),
-    
-    trackUpgrade: (fromPlan: string, toPlan: string) => 
-      analytics.trackUpgrade(fromPlan, toPlan)
+    trackPromptEnhancement: (data: {
+      originalPrompt: string;
+      enhancedPrompt: string;
+      modelUsed: string;
+      enhancementTimeMs: number;
+    }) => enhancedAnalytics.trackPromptEnhancement(data)
   };
 };

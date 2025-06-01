@@ -1,75 +1,60 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { 
   Users, 
-  Activity, 
-  Settings, 
-  Search,
+  MessageSquare, 
+  TrendingUp, 
+  Database,
+  Settings,
+  Activity,
   BarChart3,
-  Clock,
-  Zap,
-  Shield
+  Calendar,
+  Coffee
 } from 'lucide-react';
-
-interface DashboardStats {
-  total_users: number;
-  active_users_today: number;
-  total_sessions: number;
-  total_prompts: number;
-  average_session_duration: string;
-  onboarding_completion_rate: number;
-}
 
 interface UserProfile {
   id: string;
-  email: string;
-  full_name: string;
-  plan_type: string;
-  prompts_used: number;
-  created_at: string;
-  last_sign_in_at?: string;
-  role?: string;
-  onboarding_completed?: boolean;
+  email: string | null;
+  full_name: string | null;
+  prompts_used: number | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
-interface OnboardingResponse {
+interface AnalyticsEvent {
   id: string;
-  user_id: string;
-  responses: any;
-  completed_at: string;
-  user_email?: string;
+  event_type: string;
+  user_id: string | null;
+  metadata: any;
+  created_at: string;
+  page_url: string | null;
 }
 
-const AdminDashboard: React.FC = () => {
-  const [stats, setStats] = useState<DashboardStats>({
-    total_users: 0,
-    active_users_today: 0,
-    total_sessions: 0,
-    total_prompts: 0,
-    average_session_duration: '0m',
-    onboarding_completion_rate: 0
-  });
+interface SystemStats {
+  totalUsers: number;
+  totalPrompts: number;
+  totalEvents: number;
+  activeUsers: number;
+}
+
+const AdminDashboard = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
-  const [onboardingData, setOnboardingData] = useState<OnboardingResponse[]>([]);
+  const [events, setEvents] = useState<AnalyticsEvent[]>([]);
+  const [stats, setStats] = useState<SystemStats>({
+    totalUsers: 0,
+    totalPrompts: 0,
+    totalEvents: 0,
+    activeUsers: 0
+  });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -79,101 +64,46 @@ const AdminDashboard: React.FC = () => {
 
   const loadDashboardData = async () => {
     try {
-      // Load users first
+      setLoading(true);
+      
+      // Load users data
       const { data: usersData, error: usersError } = await supabase
         .from('profiles')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (usersError) throw usersError;
 
-      // Load user roles separately
-      const { data: rolesData, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
+      // Load recent events
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('analytics_events')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
 
-      if (rolesError) {
-        console.error('Error loading roles:', rolesError);
-        // Continue without roles if there's an error
-      }
+      if (eventsError) throw eventsError;
 
-      // Load onboarding responses with user data
-      const { data: onboardingRawData, error: onboardingError } = await supabase
-        .from('onboarding_responses')
-        .select('*');
-
-      if (onboardingError) throw onboardingError;
-
-      // Get user emails for onboarding data
-      const onboardingWithEmails = await Promise.all(
-        (onboardingRawData || []).map(async (response) => {
-          const { data: userProfile } = await supabase
-            .from('profiles')
-            .select('email')
-            .eq('id', response.user_id)
-            .single();
-          
-          return {
-            ...response,
-            user_email: userProfile?.email || 'Unknown'
-          };
-        })
-      );
-
-      // Load session statistics
-      const { data: sessionStats, error: sessionError } = await supabase
-        .from('user_sessions')
-        .select('duration_seconds, created_at');
-
-      if (sessionError) throw sessionError;
-
-      // Load prompt statistics
-      const { data: promptStats, error: promptError } = await supabase
-        .from('enhanced_prompts')
-        .select('created_at');
-
-      if (promptError) throw promptError;
-
-      // Calculate statistics
+      // Calculate stats
       const totalUsers = usersData?.length || 0;
-      const today = new Date().toISOString().split('T')[0];
-      const activeToday = sessionStats?.filter(s => 
-        s.created_at.startsWith(today)
+      const totalPrompts = usersData?.reduce((sum, user) => sum + (user.prompts_used || 0), 0) || 0;
+      const totalEvents = eventsData?.length || 0;
+      
+      // Active users in last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const activeUsers = usersData?.filter(user => 
+        user.updated_at && new Date(user.updated_at) > thirtyDaysAgo
       ).length || 0;
 
-      const avgDuration = sessionStats?.length 
-        ? Math.round(sessionStats.reduce((sum, s) => sum + (s.duration_seconds || 0), 0) / sessionStats.length / 60)
-        : 0;
-
-      const onboardingCompletionRate = totalUsers > 0 
-        ? Math.round((onboardingWithEmails?.length || 0) / totalUsers * 100)
-        : 0;
-
+      setUsers(usersData || []);
+      setEvents(eventsData || []);
       setStats({
-        total_users: totalUsers,
-        active_users_today: activeToday,
-        total_sessions: sessionStats?.length || 0,
-        total_prompts: promptStats?.length || 0,
-        average_session_duration: `${avgDuration}m`,
-        onboarding_completion_rate: onboardingCompletionRate
+        totalUsers,
+        totalPrompts,
+        totalEvents,
+        activeUsers
       });
-
-      // Process users data and merge with roles
-      const processedUsers: UserProfile[] = (usersData || []).map(user => {
-        const userRole = rolesData?.find(role => role.user_id === user.id);
-        return {
-          ...user,
-          email: user.email || '',
-          full_name: user.full_name || '',
-          plan_type: user.plan_type || 'free',
-          prompts_used: user.prompts_used || 0,
-          role: userRole?.role || 'user',
-          onboarding_completed: onboardingWithEmails?.some(o => o.user_id === user.id)
-        };
-      });
-
-      setUsers(processedUsers);
-      setOnboardingData(onboardingWithEmails);
 
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -183,267 +113,240 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const filteredUsers = users.filter(user =>
+  const filteredUsers = users.filter(user => 
     user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="loading-spinner" />
+      <div className="flex items-center justify-center h-full min-h-[400px]">
+        <div className="text-center">
+          <div className="loading-spinner mb-4" />
+          <p className="text-white/70">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gradient-blue">Admin Dashboard</h1>
-          <p className="text-white/70">Comprehensive system overview and management</p>
+          <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+          <p className="text-white/70">Manage your PromptShift application</p>
         </div>
-        <Button
+        <Button 
           onClick={loadDashboardData}
-          variant="outline"
-          className="hover-glow"
+          className="bg-blue-600 hover:bg-blue-700"
         >
+          <Activity className="mr-2 h-4 w-4" />
           Refresh Data
         </Button>
       </div>
 
-      {/* Enhanced Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card className="bolt-card hover-border-glow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/70">
-              Total Users
-            </CardTitle>
-            <Users className="h-4 w-4 text-blue-400" />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="bg-[#060B16] border-white/10">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-white/80">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.total_users}</div>
+            <div className="text-2xl font-bold text-white">{stats.totalUsers}</div>
+            <p className="text-xs text-white/60">Free service users</p>
           </CardContent>
         </Card>
 
-        <Card className="bolt-card hover-border-glow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/70">
-              Active Today
-            </CardTitle>
-            <Activity className="h-4 w-4 text-green-400" />
+        <Card className="bg-[#060B16] border-white/10">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-white/80">Total Prompts</CardTitle>
+            <MessageSquare className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.active_users_today}</div>
+            <div className="text-2xl font-bold text-white">{stats.totalPrompts}</div>
+            <p className="text-xs text-white/60">Enhanced prompts</p>
           </CardContent>
         </Card>
 
-        <Card className="bolt-card hover-border-glow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/70">
-              Total Sessions
-            </CardTitle>
-            <Clock className="h-4 w-4 text-purple-400" />
+        <Card className="bg-[#060B16] border-white/10">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-white/80">Active Users</CardTitle>
+            <TrendingUp className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.total_sessions}</div>
+            <div className="text-2xl font-bold text-white">{stats.activeUsers}</div>
+            <p className="text-xs text-white/60">Last 30 days</p>
           </CardContent>
         </Card>
 
-        <Card className="bolt-card hover-border-glow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/70">
-              Total Prompts
-            </CardTitle>
-            <Zap className="h-4 w-4 text-yellow-400" />
+        <Card className="bg-[#060B16] border-white/10">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-white/80">Total Events</CardTitle>
+            <BarChart3 className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.total_prompts}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bolt-card hover-border-glow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/70">
-              Avg. Session
-            </CardTitle>
-            <BarChart3 className="h-4 w-4 text-orange-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.average_session_duration}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bolt-card hover-border-glow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/70">
-              Onboarding %
-            </CardTitle>
-            <Shield className="h-4 w-4 text-cyan-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.onboarding_completion_rate}%</div>
+            <div className="text-2xl font-bold text-white">{stats.totalEvents}</div>
+            <p className="text-xs text-white/60">Analytics events</p>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="users" className="w-full">
-        <TabsList>
-          <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="system">System</TabsTrigger>
+      {/* Main Content */}
+      <Tabs defaultValue="users" className="space-y-6">
+        <TabsList className="bg-[#060B16] border-white/10">
+          <TabsTrigger value="users" className="data-[state=active]:bg-blue-600">
+            <Users className="mr-2 h-4 w-4" />
+            Users
+          </TabsTrigger>
+          <TabsTrigger value="events" className="data-[state=active]:bg-blue-600">
+            <Activity className="mr-2 h-4 w-4" />
+            Events
+          </TabsTrigger>
+          <TabsTrigger value="support" className="data-[state=active]:bg-blue-600">
+            <Coffee className="mr-2 h-4 w-4" />
+            Support
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Search className="h-4 w-4 text-white/40" />
-            <Input
-              placeholder="Search users..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-sm bg-[#060B16] border-white/10"
-            />
-          </div>
-
-          <div className="rounded-md border border-white/10">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-white/5">
-                  <TableHead className="text-white/70">Email</TableHead>
-                  <TableHead className="text-white/70">Name</TableHead>
-                  <TableHead className="text-white/70">Role</TableHead>
-                  <TableHead className="text-white/70">Plan</TableHead>
-                  <TableHead className="text-white/70">Prompts Used</TableHead>
-                  <TableHead className="text-white/70">Onboarded</TableHead>
-                  <TableHead className="text-white/70">Joined</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id} className="hover:bg-white/5">
-                    <TableCell className="font-medium text-white">
-                      {user.email}
-                    </TableCell>
-                    <TableCell className="text-white/70">
-                      {user.full_name || 'Not set'}
-                    </TableCell>
-                    <TableCell className="text-white/70">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        user.role === 'admin' ? 'bg-red-900/30 text-red-400' : 'bg-gray-700/30 text-gray-400'
-                      }`}>
-                        {user.role}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-white/70">
-                      {user.plan_type || 'Free'}
-                    </TableCell>
-                    <TableCell className="text-white/70">
-                      {user.prompts_used || 0}
-                    </TableCell>
-                    <TableCell className="text-white/70">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        user.onboarding_completed ? 'bg-green-900/30 text-green-400' : 'bg-yellow-900/30 text-yellow-400'
-                      }`}>
-                        {user.onboarding_completed ? 'Yes' : 'No'}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-white/70">
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="onboarding" className="space-y-4">
-          <Card className="bolt-card">
+          <Card className="bg-[#060B16] border-white/10">
             <CardHeader>
-              <CardTitle>Onboarding Insights</CardTitle>
-              <CardDescription>
-                User onboarding responses and completion analytics
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {onboardingData.map((response) => (
-                  <Card key={response.id} className="bg-[#060B16] border-white/10">
-                    <CardHeader>
-                      <div className="flex justify-between items-center">
-                        <CardTitle className="text-sm">{response.user_email}</CardTitle>
-                        <span className="text-xs text-white/50">
-                          {new Date(response.completed_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-white/70">Experience: </span>
-                          <span className="text-white">{response.responses.experience_level || 'Not specified'}</span>
-                        </div>
-                        <div>
-                          <span className="text-white/70">Use Case: </span>
-                          <span className="text-white">{response.responses.primary_use_case || 'Not specified'}</span>
-                        </div>
-                        <div>
-                          <span className="text-white/70">Preferred Models: </span>
-                          <span className="text-white">
-                            {response.responses.preferred_models?.join(', ') || 'None selected'}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-white/70">Company Size: </span>
-                          <span className="text-white">{response.responses.company_size || 'Not specified'}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="analytics">
-          <Card className="bolt-card">
-            <CardHeader>
-              <CardTitle>Analytics Dashboard</CardTitle>
-              <CardDescription>
-                Detailed analytics and usage statistics
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-white/70">
-                Advanced analytics features coming soon...
-                <br />
-                Current data: {stats.total_sessions} sessions, {stats.total_prompts} prompts enhanced
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="system">
-          <Card className="bolt-card">
-            <CardHeader>
-              <CardTitle>System Management</CardTitle>
-              <CardDescription>
-                System-wide settings and maintenance tools
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-white/70">
-                  System management features:
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-white">User Management</CardTitle>
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="search" className="text-white/70">Search:</Label>
+                  <Input
+                    id="search"
+                    placeholder="Search users..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-64 bg-[#050A14] border-white/20"
+                  />
                 </div>
-                <ul className="list-disc list-inside text-white/60 space-y-2">
-                  <li>Database health monitoring</li>
-                  <li>User session management</li>
-                  <li>Performance optimization</li>
-                  <li>Security audit logs</li>
-                </ul>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-white/10">
+                    <TableHead className="text-white/80">User</TableHead>
+                    <TableHead className="text-white/80">Email</TableHead>
+                    <TableHead className="text-white/80">Prompts Used</TableHead>
+                    <TableHead className="text-white/80">Joined</TableHead>
+                    <TableHead className="text-white/80">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((user) => (
+                    <TableRow key={user.id} className="border-white/10">
+                      <TableCell className="text-white">
+                        {user.full_name || 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-white/70">
+                        {user.email || 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-white/70">
+                        {user.prompts_used || 0}
+                      </TableCell>
+                      <TableCell className="text-white/70">
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="bg-green-900/20 text-green-400">
+                          Free User
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="events" className="space-y-4">
+          <Card className="bg-[#060B16] border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white">Recent Events</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-white/10">
+                    <TableHead className="text-white/80">Event Type</TableHead>
+                    <TableHead className="text-white/80">User ID</TableHead>
+                    <TableHead className="text-white/80">Page</TableHead>
+                    <TableHead className="text-white/80">Timestamp</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {events.map((event) => (
+                    <TableRow key={event.id} className="border-white/10">
+                      <TableCell>
+                        <Badge variant="outline" className="border-blue-500/20 text-blue-400">
+                          {event.event_type}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-white/70 font-mono text-xs">
+                        {event.user_id ? event.user_id.substring(0, 8) + '...' : 'Anonymous'}
+                      </TableCell>
+                      <TableCell className="text-white/70 text-xs">
+                        {event.page_url ? new URL(event.page_url).pathname : 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-white/70">
+                        {new Date(event.created_at).toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="support" className="space-y-4">
+          <Card className="bg-[#060B16] border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Coffee className="h-5 w-5 text-amber-500" />
+                Community Support
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-white/70">
+                PromptShift is completely free to use. Our community supports the service through voluntary contributions.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="bg-[#050A14] border-amber-500/20">
+                  <CardContent className="p-4">
+                    <h3 className="text-amber-400 font-semibold mb-2">Buy Me a Coffee</h3>
+                    <p className="text-white/60 text-sm mb-3">
+                      Support our development and server costs
+                    </p>
+                    <Button 
+                      className="w-full bg-amber-600 hover:bg-amber-700"
+                      onClick={() => window.open('https://buymeacoffee.com/promptshift', '_blank')}
+                    >
+                      <Coffee className="mr-2 h-4 w-4" />
+                      Support Us
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-[#050A14] border-blue-500/20">
+                  <CardContent className="p-4">
+                    <h3 className="text-blue-400 font-semibold mb-2">Free Forever</h3>
+                    <p className="text-white/60 text-sm mb-3">
+                      No limits, no subscriptions, no hidden costs
+                    </p>
+                    <Badge variant="secondary" className="bg-green-900/20 text-green-400">
+                      100% Free Service
+                    </Badge>
+                  </CardContent>
+                </Card>
               </div>
             </CardContent>
           </Card>

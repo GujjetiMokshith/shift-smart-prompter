@@ -48,16 +48,27 @@ export class EnhancedAnalytics {
 
       // Update user prompt usage if user is logged in
       if (data.userId) {
-        const { error: updateError } = await supabase
+        // Get current prompts_used count
+        const { data: profile, error: fetchError } = await supabase
           .from('profiles')
-          .update({ 
-            prompts_used: supabase.raw('prompts_used + 1'),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', data.userId);
+          .select('prompts_used')
+          .eq('id', data.userId)
+          .single();
 
-        if (updateError) {
-          console.error('Error updating user prompt count:', updateError);
+        if (!fetchError && profile) {
+          const newCount = (profile.prompts_used || 0) + 1;
+          
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ 
+              prompts_used: newCount,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', data.userId);
+
+          if (updateError) {
+            console.error('Error updating user prompt count:', updateError);
+          }
         }
       }
 
