@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { SignIn, SignUp, UserButton, useUser } from '@clerk/clerk-react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Zap } from 'lucide-react';
 
@@ -17,12 +16,14 @@ export const ClerkAuth: React.FC<ClerkAuthProps> = ({ isOpen, onClose, mode, onT
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-[#030712] border border-white/10 text-white p-0">
         <div className="p-6">
-          <div className="flex items-center gap-2 mb-6 justify-center">
-            <Zap className="h-5 w-5 text-blue-500" />
-            <h1 className="text-xl font-bold text-white">
-              {mode === 'signin' ? 'Welcome Back' : 'Create Account'}
-            </h1>
-          </div>
+          <DialogHeader>
+            <div className="flex items-center gap-2 mb-6 justify-center">
+              <Zap className="h-5 w-5 text-blue-500" />
+              <DialogTitle className="text-xl font-bold text-white">
+                {mode === 'signin' ? 'Welcome Back' : 'Create Account'}
+              </DialogTitle>
+            </div>
+          </DialogHeader>
           
           <div className="clerk-auth-container">
             {mode === 'signin' ? (
