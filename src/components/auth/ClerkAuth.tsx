@@ -14,12 +14,12 @@ interface ClerkAuthProps {
 export const ClerkAuth: React.FC<ClerkAuthProps> = ({ isOpen, onClose, mode, onToggleMode }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-[#030712] border border-white/10 text-white p-0">
+      <DialogContent className="sm:max-w-md bg-background border border-input">
         <div className="p-6">
           <DialogHeader>
             <div className="flex items-center gap-2 mb-6 justify-center">
-              <Zap className="h-5 w-5 text-blue-500" />
-              <DialogTitle className="text-xl font-bold text-white">
+              <Zap className="h-5 w-5" />
+              <DialogTitle className="text-xl font-bold">
                 {mode === 'signin' ? 'Welcome Back' : 'Create Account'}
               </DialogTitle>
             </div>
@@ -34,12 +34,12 @@ export const ClerkAuth: React.FC<ClerkAuthProps> = ({ isOpen, onClose, mode, onT
                     card: "bg-transparent shadow-none",
                     headerTitle: "hidden",
                     headerSubtitle: "hidden",
-                    socialButtonsBlockButton: "bg-[#060B16] border-white/10 text-white hover:bg-[#0a1220]",
-                    formButtonPrimary: "bg-blue-600 hover:bg-blue-700",
-                    formFieldInput: "bg-[#060B16] border-white/10 text-white",
-                    identityPreviewEditButton: "text-blue-400",
-                    formFieldLabel: "text-white/80",
-                    footerActionLink: "text-blue-400 hover:text-blue-300"
+                    socialButtonsBlockButton: "bg-secondary border-input",
+                    formButtonPrimary: "bg-primary",
+                    formFieldInput: "bg-secondary border-input",
+                    identityPreviewEditButton: "text-primary",
+                    formFieldLabel: "text-foreground",
+                    footerActionLink: "text-primary"
                   }
                 }}
                 redirectUrl="/workspace"
@@ -52,12 +52,12 @@ export const ClerkAuth: React.FC<ClerkAuthProps> = ({ isOpen, onClose, mode, onT
                     card: "bg-transparent shadow-none",
                     headerTitle: "hidden",
                     headerSubtitle: "hidden",
-                    socialButtonsBlockButton: "bg-[#060B16] border-white/10 text-white hover:bg-[#0a1220]",
-                    formButtonPrimary: "bg-blue-600 hover:bg-blue-700",
-                    formFieldInput: "bg-[#060B16] border-white/10 text-white",
-                    identityPreviewEditButton: "text-blue-400",
-                    formFieldLabel: "text-white/80",
-                    footerActionLink: "text-blue-400 hover:text-blue-300"
+                    socialButtonsBlockButton: "bg-secondary border-input",
+                    formButtonPrimary: "bg-primary",
+                    formFieldInput: "bg-secondary border-input",
+                    identityPreviewEditButton: "text-primary",
+                    formFieldLabel: "text-foreground",
+                    footerActionLink: "text-primary"
                   }
                 }}
                 redirectUrl="/workspace"
@@ -68,7 +68,7 @@ export const ClerkAuth: React.FC<ClerkAuthProps> = ({ isOpen, onClose, mode, onT
           <div className="text-center mt-4">
             <button
               onClick={onToggleMode}
-              className="text-blue-400 hover:text-blue-300 text-sm transition-colors"
+              className="text-primary hover:text-primary/90 text-sm transition-colors"
             >
               {mode === 'signin' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
             </button>
@@ -85,9 +85,9 @@ export const ClerkUserButton: React.FC = () => {
       appearance={{
         elements: {
           avatarBox: "w-8 h-8",
-          userButtonPopoverCard: "bg-[#030712] border border-white/10",
-          userButtonPopoverActionButton: "text-white hover:bg-white/10",
-          userButtonPopoverActionButtonText: "text-white",
+          userButtonPopoverCard: "bg-background border border-input",
+          userButtonPopoverActionButton: "hover:bg-secondary",
+          userButtonPopoverActionButtonText: "text-foreground",
           userButtonPopoverFooter: "hidden"
         }
       }}
