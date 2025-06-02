@@ -1,6 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
 import ChatContainer from '@/components/ChatContainer';
 import OnboardingModal from '@/components/OnboardingModal';
@@ -10,27 +8,13 @@ import { Toaster } from 'sonner';
 import { sessionTracker } from '@/services/sessionTracker';
 
 const Workspace = () => {
-  const { user, isLoaded } = useUser();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [hasMessages, setHasMessages] = useState(false);
   const [inputValue, setInputValue] = useState('');
 
-  useEffect(() => {
-    if (isLoaded && user) {
-      // Check if user has completed onboarding
-      const hasCompletedOnboarding = localStorage.getItem(`onboarding_completed_${user.id}`);
-      if (!hasCompletedOnboarding) {
-        setShowOnboarding(true);
-      }
-    }
-  }, [isLoaded, user]);
-
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
-    if (user) {
-      localStorage.setItem(`onboarding_completed_${user.id}`, 'true');
-    }
     sessionTracker.trackEvent('onboarding_completed');
   };
 
@@ -47,14 +31,6 @@ const Workspace = () => {
   const handleToggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
-
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050A14]">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex bg-[#050A14] text-white">
@@ -83,12 +59,10 @@ const Workspace = () => {
         </main>
       </div>
 
-      {user && (
-        <OnboardingModal 
-          isOpen={showOnboarding} 
-          onComplete={handleOnboardingComplete} 
-        />
-      )}
+      <OnboardingModal 
+        isOpen={showOnboarding} 
+        onComplete={handleOnboardingComplete} 
+      />
       
       <Toaster position="bottom-right" />
     </div>

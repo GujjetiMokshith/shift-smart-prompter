@@ -1,11 +1,9 @@
-
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Zap, Menu, X } from "lucide-react";
+import { Zap, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { useUser, SignedIn, SignedOut } from '@clerk/clerk-react';
-import { ClerkUserButton, ClerkAuth } from '@/components/auth/ClerkAuth';
+import AuthModal from "@/components/AuthModal";
 
 interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   onToggleSidebar?: () => void;
@@ -19,12 +17,6 @@ const Header: React.FC<HeaderProps> = ({
   ...props 
 }) => {
   const [showAuth, setShowAuth] = useState(false);
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
-  const { user } = useUser();
-
-  const handleToggleAuthMode = () => {
-    setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
-  };
 
   return (
     <header 
@@ -60,52 +52,25 @@ const Header: React.FC<HeaderProps> = ({
       </div>
       
       <div className="flex items-center gap-4">
-        <SignedOut>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-white/70 hover:text-white hover:bg-white/5 hover-border-glow rounded-lg"
-            onClick={() => {
-              setAuthMode('signin');
-              setShowAuth(true);
-            }}
-          >
-            Sign In
-          </Button>
-          
-          <Button 
-            size="sm" 
-            className="bg-blue-800 hover:bg-blue-700 text-white hover-glow rounded-lg"
-            onClick={() => {
-              setAuthMode('signup');
-              setShowAuth(true);
-            }}
-          >
-            Get Started
-          </Button>
-        </SignedOut>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-white/70 hover:text-white hover:bg-white/5 hover-border-glow rounded-lg"
+          onClick={() => setShowAuth(true)}
+        >
+          Sign In
+        </Button>
         
-        <SignedIn>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-white/70 hover:text-white hover:bg-white/5 hover-border-glow rounded-lg"
-            asChild
-          >
-            <Link to="/workspace">
-              Workspace
-            </Link>
-          </Button>
-          <ClerkUserButton />
-        </SignedIn>
+        <Button 
+          size="sm" 
+          className="bg-blue-800 hover:bg-blue-700 text-white hover-glow rounded-lg"
+          onClick={() => setShowAuth(true)}
+        >
+          Get Started
+        </Button>
       </div>
 
-      <ClerkAuth 
-        isOpen={showAuth}
-        onClose={() => setShowAuth(false)}
-        mode={authMode}
-        onToggleMode={handleToggleAuthMode}
-      />
+      <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
     </header>
   );
 };
