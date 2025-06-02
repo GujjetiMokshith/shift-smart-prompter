@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from 'sonner';
-import { X } from 'lucide-react';
+import { X, Sparkles } from 'lucide-react';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -102,22 +102,27 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete })
       <DialogContent className="sm:max-w-[600px] bg-[#050A14] border-white/10">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="text-2xl font-bold text-white">
-                Welcome to PromptShift!
-              </DialogTitle>
-              <DialogDescription className="text-white/70">
-                Let's personalize your experience. This will only take a few minutes.
-              </DialogDescription>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-blue-400" />
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-bold text-white">
+                  Welcome to PromptShift!
+                </DialogTitle>
+                <DialogDescription className="text-white/70">
+                  Let's personalize your experience. This will only take a few minutes.
+                </DialogDescription>
+              </div>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleSkip}
-              className="text-white/60 hover:text-white hover:bg-white/10"
+              className="text-white/60 hover:text-white hover:bg-white/10 flex items-center gap-2"
             >
-              <X className="h-4 w-4 mr-1" />
-              Skip
+              <X className="h-4 w-4" />
+              Skip for now
             </Button>
           </div>
         </DialogHeader>
@@ -128,7 +133,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete })
             {[1, 2, 3].map((step) => (
               <div
                 key={step}
-                className={`h-2 flex-1 rounded-full ${
+                className={`h-2 flex-1 rounded-full transition-colors ${
                   step <= currentStep ? 'bg-blue-500' : 'bg-white/10'
                 }`}
               />
@@ -273,7 +278,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete })
           )}
 
           {/* Navigation */}
-          <div className="flex justify-between">
+          <div className="flex justify-between pt-4">
             <Button
               variant="ghost"
               onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}

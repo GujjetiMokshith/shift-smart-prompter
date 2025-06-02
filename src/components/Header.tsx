@@ -1,13 +1,31 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Zap, LayoutGrid } from "lucide-react";
+import { Zap, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useUser, SignedIn, SignedOut } from '@clerk/clerk-react';
+import { ClerkUserButton, ClerkAuth } from '@/components/auth/ClerkAuth';
 
-interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  onToggleSidebar?: () => void;
+  showSidebarToggle?: boolean;
+}
 
-const Header: React.FC<HeaderProps> = ({ className, ...props }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  className, 
+  onToggleSidebar, 
+  showSidebarToggle = false,
+  ...props 
+}) => {
+  const [showAuth, setShowAuth] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const { user } = useUser();
+
+  const handleToggleAuthMode = () => {
+    setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
+  };
+
   return (
     <header 
       className={cn(
@@ -17,6 +35,17 @@ const Header: React.FC<HeaderProps> = ({ className, ...props }) => {
       {...props}
     >
       <div className="flex items-center">
+        {showSidebarToggle && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggleSidebar}
+            className="mr-4 text-white/70 hover:text-white hover:bg-white/10"
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
+        )}
+        
         <Link to="/" className="flex items-center group hover-scale">
           <div className="flex items-center">
             <Zap className="h-6 w-6 text-blue-500 mr-3 group-hover:text-blue-400 transition-colors" />
@@ -31,39 +60,52 @@ const Header: React.FC<HeaderProps> = ({ className, ...props }) => {
       </div>
       
       <div className="flex items-center gap-4">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="text-white/70 hover:text-white hover:bg-white/5 hover-border-glow rounded-lg"
-          asChild
-        >
-          <Link to="/docs">
-            Documentation
-          </Link>
-        </Button>
+        <SignedOut>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-white/70 hover:text-white hover:bg-white/5 hover-border-glow rounded-lg"
+            onClick={() => {
+              setAuthMode('signin');
+              setShowAuth(true);
+            }}
+          >
+            Sign In
+          </Button>
+          
+          <Button 
+            size="sm" 
+            className="bg-blue-800 hover:bg-blue-700 text-white hover-glow rounded-lg"
+            onClick={() => {
+              setAuthMode('signup');
+              setShowAuth(true);
+            }}
+          >
+            Get Started
+          </Button>
+        </SignedOut>
         
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="text-white/70 hover:text-white hover:bg-white/5 hover-border-glow rounded-lg"
-          asChild
-        >
-          <Link to="/about">
-            About
-          </Link>
-        </Button>
-        
-        <Button 
-          size="sm" 
-          className="bg-blue-800 hover:bg-blue-700 text-white hover-glow rounded-lg"
-          asChild
-        >
-          <Link to="/workspace">
-            <LayoutGrid className="mr-2 h-4 w-4" />
-            Workspace
-          </Link>
-        </Button>
+        <SignedIn>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-white/70 hover:text-white hover:bg-white/5 hover-border-glow rounded-lg"
+            asChild
+          >
+            <Link to="/workspace">
+              Workspace
+            </Link>
+          </Button>
+          <ClerkUserButton />
+        </SignedIn>
       </div>
+
+      <ClerkAuth 
+        isOpen={showAuth}
+        onClose={() => setShowAuth(false)}
+        mode={authMode}
+        onToggleMode={handleToggleAuthMode}
+      />
     </header>
   );
 };

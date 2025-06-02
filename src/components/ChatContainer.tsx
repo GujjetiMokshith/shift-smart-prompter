@@ -5,10 +5,11 @@ import ChatInput from "./ChatInput";
 import { cn } from "@/lib/utils";
 import ModelSelector from "./ModelSelector";
 import { toast } from "sonner";
-import { Loader2, Sparkles, RotateCcw, Plus } from "lucide-react";
+import { Loader2, Plus, RotateCcw } from "lucide-react";
 import ModelSelectionModal from "./ModelSelectionModal";
 import SettingsModal from "./SettingsModal";
 import { supabase } from "@/integrations/supabase/client";
+import { useUser } from '@clerk/clerk-react';
 import Groq from "groq-sdk";
 import { Button } from "./ui/button";
 
@@ -16,18 +17,23 @@ interface ChatContainerProps {
   className?: string;
   activePromptId?: string | null;
   onPromptSaved?: (prompt: any) => void;
+  initialInput?: string;
+  onMessageSent?: () => void;
 }
 
 const ChatContainer: React.FC<ChatContainerProps> = ({ 
   className, 
   activePromptId, 
-  onPromptSaved
+  onPromptSaved,
+  initialInput = '',
+  onMessageSent
 }) => {
+  const { user } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
   const [showModelSelection, setShowModelSelection] = useState(false);
-  const [inputText, setInputText] = useState("");
+  const [inputText, setInputText] = useState(initialInput);
   const [isCustomPrompt, setIsCustomPrompt] = useState(false);
   const [customSystemPrompt, setCustomSystemPrompt] = useState("");
   const [currentEnhancedPrompt, setCurrentEnhancedPrompt] = useState("");
@@ -47,6 +53,12 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     "mixtral-8x7b-32768",
     "gemma2-9b-it"
   ];
+
+  useEffect(() => {
+    if (initialInput) {
+      setInputText(initialInput);
+    }
+  }, [initialInput]);
 
   // Load active prompt data
   useEffect(() => {
@@ -107,6 +119,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     
     setInputText("");
     setShowModelSelection(true);
+    if (onMessageSent) onMessageSent();
   };
   
   const proceedWithModel = async (modelId: string) => {
@@ -239,7 +252,6 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
 
   const savePromptToDatabase = async (originalPrompt: string, enhancedPrompt: string, modelUsed: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         // User not authenticated, skip saving
         return;
@@ -346,50 +358,32 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
       </div>
 
       <div className="flex-1 overflow-y-auto prompt-chat-scrollbar px-6 min-h-[400px] max-h-[600px]">
-        {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-8">
-            <div className="w-20 h-20 rounded-full bg-blue-800/20 flex items-center justify-center mb-6 glow-blue-sm">
-              <Sparkles className="h-8 w-8 text-blue-400" />
-            </div>
-            <h3 className="text-2xl font-medium mb-3 text-white">Ready to enhance your prompts?</h3>
-            <p className="text-white/70 max-w-md leading-relaxed">
-              Paste your existing prompt below and I'll transform it into a detailed, AI-optimized instruction using Groq's lightning-fast processing.
-            </p>
-            <div className="mt-4 text-sm text-green-400 flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-              Powered by Groq • Ultra-fast AI inference
-            </div>
+        {messages.map(message => (
+          <ChatMessage 
+            key={message.id} 
+            message={message}
+          />
+        ))}
+        
+        {currentEnhancedPrompt && !loading && (
+          <div className="mt-6 flex gap-3 justify-center">
+            <Button
+              onClick={handleExpand}
+              className="bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 hover:text-blue-300 border border-blue-800/30 hover-glow-sm"
+              size="sm"
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              Expand
+            </Button>
+            <Button
+              onClick={handleCondense}
+              className="bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 hover:text-blue-300 border border-blue-800/30 hover-glow-sm"
+              size="sm"
+            >
+              <RotateCcw className="h-3 w-3 mr-1" />
+              Condense
+            </Button>
           </div>
-        ) : (
-          <>
-            {messages.map(message => (
-              <ChatMessage 
-                key={message.id} 
-                message={message}
-              />
-            ))}
-            
-            {currentEnhancedPrompt && !loading && (
-              <div className="mt-6 flex gap-3 justify-center">
-                <Button
-                  onClick={handleExpand}
-                  className="bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 hover:text-blue-300 border border-blue-800/30 hover-glow-sm"
-                  size="sm"
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Expand
-                </Button>
-                <Button
-                  onClick={handleCondense}
-                  className="bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 hover:text-blue-300 border border-blue-800/30 hover-glow-sm"
-                  size="sm"
-                >
-                  <RotateCcw className="h-3 w-3 mr-1" />
-                  Condense
-                </Button>
-              </div>
-            )}
-          </>
         )}
         
         {loading && (
