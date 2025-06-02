@@ -1,10 +1,11 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import ChatMessage, { Message, MessageType } from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import { cn } from "@/lib/utils";
 import ModelSelector from "./ModelSelector";
 import { toast } from "sonner";
-import { Loader2, Sparkles, RotateCcw, Plus } from "lucide-react";
+import { Loader2, Sparkles, RotateCcw, Plus, MessageSquare } from "lucide-react";
 import ModelSelectionModal from "./ModelSelectionModal";
 import SettingsModal from "./SettingsModal";
 import { supabase } from "@/integrations/supabase/client";
