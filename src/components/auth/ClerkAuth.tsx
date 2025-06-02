@@ -1,5 +1,5 @@
 import React from 'react';
-import { SignIn, SignUp, UserButton, useUser } from '@clerk/clerk-react';
+import { SignIn, SignUp, UserButton } from '@clerk/clerk-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Zap } from 'lucide-react';
@@ -42,8 +42,7 @@ export const ClerkAuth: React.FC<ClerkAuthProps> = ({ isOpen, onClose, mode, onT
                     footerActionLink: "text-blue-400 hover:text-blue-300"
                   }
                 }}
-                fallbackRedirectUrl="/workspace"
-                forceRedirectUrl="/workspace"
+                redirectUrl="/workspace"
               />
             ) : (
               <SignUp 
@@ -61,8 +60,7 @@ export const ClerkAuth: React.FC<ClerkAuthProps> = ({ isOpen, onClose, mode, onT
                     footerActionLink: "text-blue-400 hover:text-blue-300"
                   }
                 }}
-                fallbackRedirectUrl="/workspace"
-                forceRedirectUrl="/workspace"
+                redirectUrl="/workspace"
               />
             )}
           </div>

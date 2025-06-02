@@ -1,11 +1,11 @@
-
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Zap, Menu, X } from "lucide-react";
+import { Zap, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useUser, SignedIn, SignedOut } from '@clerk/clerk-react';
-import { ClerkUserButton, ClerkAuth } from '@/components/auth/ClerkAuth';
+import { ClerkUserButton } from '@/components/auth/ClerkAuth';
+import AuthModal from '@/components/AuthModal';
 
 interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   onToggleSidebar?: () => void;
@@ -19,12 +19,7 @@ const Header: React.FC<HeaderProps> = ({
   ...props 
 }) => {
   const [showAuth, setShowAuth] = useState(false);
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const { user } = useUser();
-
-  const handleToggleAuthMode = () => {
-    setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
-  };
 
   return (
     <header 
@@ -65,10 +60,7 @@ const Header: React.FC<HeaderProps> = ({
             variant="ghost" 
             size="sm" 
             className="text-white/70 hover:text-white hover:bg-white/5 hover-border-glow rounded-lg"
-            onClick={() => {
-              setAuthMode('signin');
-              setShowAuth(true);
-            }}
+            onClick={() => setShowAuth(true)}
           >
             Sign In
           </Button>
@@ -76,10 +68,7 @@ const Header: React.FC<HeaderProps> = ({
           <Button 
             size="sm" 
             className="bg-blue-800 hover:bg-blue-700 text-white hover-glow rounded-lg"
-            onClick={() => {
-              setAuthMode('signup');
-              setShowAuth(true);
-            }}
+            onClick={() => setShowAuth(true)}
           >
             Get Started
           </Button>
@@ -100,11 +89,9 @@ const Header: React.FC<HeaderProps> = ({
         </SignedIn>
       </div>
 
-      <ClerkAuth 
+      <AuthModal 
         isOpen={showAuth}
         onClose={() => setShowAuth(false)}
-        mode={authMode}
-        onToggleMode={handleToggleAuthMode}
       />
     </header>
   );
