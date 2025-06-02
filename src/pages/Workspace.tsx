@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from '@clerk/clerk-react';
 import ChatContainer from '@/components/ChatContainer';
 import OnboardingModal from '@/components/OnboardingModal';
@@ -13,16 +13,7 @@ const Workspace = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [activeChat, setActiveChat] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const { user, isLoaded } = useUser();
-
-  // Wait for Clerk to load before showing content
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050A14]">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
+  const { user } = useUser();
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
