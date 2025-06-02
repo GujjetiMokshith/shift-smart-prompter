@@ -1,5 +1,6 @@
+
 import React, { useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { supabase } from '@/integrations/supabase/client';
 import { analytics } from '@/services/analytics';
 
 interface AnalyticsProviderProps {
@@ -7,15 +8,20 @@ interface AnalyticsProviderProps {
 }
 
 export const AnalyticsProvider: React.FC<AnalyticsProviderProps> = ({ children }) => {
-  const { user } = useUser();
-  
   useEffect(() => {
-    analytics.setUserId(user?.id || null);
-    
-    if (user) {
-      analytics.trackSignup('free_service');
-    }
-  }, [user]);
+    // Listen for auth state changes to update analytics user ID
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      analytics.setUserId(session?.user?.id || null);
+      
+      if (event === 'SIGNED_IN' && session?.user) {
+        analytics.trackSignup('free_service'); // Track as free service signup
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return <>{children}</>;
 };
