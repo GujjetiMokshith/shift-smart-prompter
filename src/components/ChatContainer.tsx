@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import ChatMessage, { Message, MessageType } from "./ChatMessage";
 import ChatInput from "./ChatInput";
@@ -9,6 +8,7 @@ import { Loader2, Sparkles, RotateCcw, Plus } from "lucide-react";
 import ModelSelectionModal from "./ModelSelectionModal";
 import SettingsModal from "./SettingsModal";
 import { supabase } from "@/integrations/supabase/client";
+import { useUser } from '@clerk/clerk-react';
 import Groq from "groq-sdk";
 import { Button } from "./ui/button";
 
@@ -32,6 +32,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const [customSystemPrompt, setCustomSystemPrompt] = useState("");
   const [currentEnhancedPrompt, setCurrentEnhancedPrompt] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user } = useUser();
 
   // Initialize Groq client
   const groq = new Groq({ 
@@ -46,6 +47,13 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     "llama-3.1-8b-instant",
     "mixtral-8x7b-32768",
     "gemma2-9b-it"
+  ];
+
+  // Sample suggestions like in the reference image
+  const suggestions = [
+    "what is web 3?",
+    "where is airfield?", 
+    "when is ww2 start?"
   ];
 
   // Load active prompt data
@@ -176,11 +184,6 @@ When enhancing a prompt, you MUST:
 5. Specify audience, purpose, and scope where relevant  
 6. For technical prompts, add implementation details, technologies, and best practices  
 
-Example transformations:  
-- Write about dogs → Create a comprehensive 1500-word guide about selecting the right dog breed for families with small children. Include sections on: temperament considerations, space requirements, exercise needs, grooming demands, and health screening. Provide specific examples of 5 family-friendly breeds with their pros and cons.  
-
-- Make a to-do app → Develop a responsive to-do list web application using React and TypeScript with the following features: task categorization with color coding, priority levels (high/medium/low), due dates with reminder notifications, recurring task support, drag-and-drop reordering, data persistence using localStorage, and a clean minimalist UI with dark/light mode toggle. Include proper error handling and accessibility features.
-
 Your enhanced prompt should be 3–5× more detailed than the original. Return ONLY the enhanced prompt with no explanations or meta-commentary.`;
 
     let currentModelIndex = 0;
@@ -220,13 +223,13 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
             console.log(`⏳ Rate limit hit for ${currentModel}`);
             retryCount++;
             if (retryCount < 3) {
-              const waitTime = 2; // Wait 2 seconds before retry
+              const waitTime = 2;
               console.log(`Waiting ${waitTime} seconds...`);
               await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
               continue;
             }
           }
-          break; // Try next model
+          break;
         }
       }
       
@@ -239,11 +242,7 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
 
   const savePromptToDatabase = async (originalPrompt: string, enhancedPrompt: string, modelUsed: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        // User not authenticated, skip saving
-        return;
-      }
+      if (!user) return;
 
       const { data, error } = await supabase
         .from('enhanced_prompts')
@@ -263,7 +262,6 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
       }
     } catch (error) {
       console.error('Error saving prompt:', error);
-      // Don't show error to user since the enhancement still worked
     }
   };
 
@@ -327,6 +325,10 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
     setInputText(text);
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setInputText(suggestion);
+  };
+
   const toggleCustomPrompt = (value: boolean) => {
     setIsCustomPrompt(value);
   };
@@ -337,81 +339,126 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
-      <div className="flex justify-between items-center mb-4 px-6 pt-6">
-        <h2 className="text-xl font-medium text-gradient-blue">Enhance Your Prompts</h2>
-        <ModelSelector 
-          selectedModel={selectedModel}
-          onSelectModel={setSelectedModel}
-        />
-      </div>
-
-      <div className="flex-1 overflow-y-auto prompt-chat-scrollbar px-6 min-h-[400px] max-h-[600px]">
+      <div className="flex-1 overflow-y-auto">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-8">
-            <div className="w-20 h-20 rounded-full bg-blue-800/20 flex items-center justify-center mb-6 glow-blue-sm">
+          <div className="h-full flex flex-col items-center justify-center text-center px-8 max-w-3xl mx-auto">
+            <div className="w-16 h-16 rounded-full bg-blue-600/20 flex items-center justify-center mb-8">
               <Sparkles className="h-8 w-8 text-blue-400" />
             </div>
-            <h3 className="text-2xl font-medium mb-3 text-white">Ready to enhance your prompts?</h3>
-            <p className="text-white/70 max-w-md leading-relaxed">
-              Paste your existing prompt below and I'll transform it into a detailed, AI-optimized instruction using Groq's lightning-fast processing.
+            
+            <h1 className="text-4xl font-semibold mb-4 text-white">
+              How Can I Assist You?
+            </h1>
+            
+            <p className="text-white/60 mb-8 text-lg">
+              Quickly find answers, get assistance, and explore AI-powered insights—all in one place
             </p>
-            <div className="mt-4 text-sm text-green-400 flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-              Powered by Groq • Ultra-fast AI inference
+
+            {/* Quick Suggestions */}
+            <div className="flex flex-wrap gap-3 mb-8">
+              {suggestions.map((suggestion, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className="bg-white/5 border-white/20 text-white/80 hover:bg-white/10 hover:text-white"
+                >
+                  <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                  {suggestion}
+                </Button>
+              ))}
+            </div>
+
+            {/* Feature Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
+              <div className="p-6 rounded-lg bg-white/5 border border-white/10">
+                <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center mb-4">
+                  <Sparkles className="h-5 w-5 text-blue-400" />
+                </div>
+                <h3 className="font-semibold text-white mb-2">Prompt Enhancement</h3>
+                <p className="text-white/60 text-sm">
+                  Transform basic prompts into detailed, AI-optimized instructions for better results.
+                </p>
+              </div>
+              
+              <div className="p-6 rounded-lg bg-white/5 border border-white/10">
+                <div className="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center mb-4">
+                  <MessageSquare className="h-5 w-5 text-green-400" />
+                </div>
+                <h3 className="font-semibold text-white mb-2">Smart Conversations</h3>
+                <p className="text-white/60 text-sm">
+                  Engage in seamless, natural conversations with AI. From answering questions to generating creative content.
+                </p>
+              </div>
+              
+              <div className="p-6 rounded-lg bg-white/5 border border-white/10">
+                <div className="w-10 h-10 bg-purple-600/20 rounded-lg flex items-center justify-center mb-4">
+                  <Plus className="h-5 w-5 text-purple-400" />
+                </div>
+                <h3 className="font-semibold text-white mb-2">Multiple Models</h3>
+                <p className="text-white/60 text-sm">
+                  Choose from various AI models including Llama, Mixtral, and Gemma for different tasks.
+                </p>
+              </div>
             </div>
           </div>
         ) : (
           <>
-            {messages.map(message => (
-              <ChatMessage 
-                key={message.id} 
-                message={message}
-              />
-            ))}
-            
-            {currentEnhancedPrompt && !loading && (
-              <div className="mt-6 flex gap-3 justify-center">
-                <Button
-                  onClick={handleExpand}
-                  className="bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 hover:text-blue-300 border border-blue-800/30 hover-glow-sm"
-                  size="sm"
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Expand
-                </Button>
-                <Button
-                  onClick={handleCondense}
-                  className="bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 hover:text-blue-300 border border-blue-800/30 hover-glow-sm"
-                  size="sm"
-                >
-                  <RotateCcw className="h-3 w-3 mr-1" />
-                  Condense
-                </Button>
-              </div>
-            )}
+            <div className="max-w-4xl mx-auto px-6 py-8">
+              {messages.map(message => (
+                <ChatMessage 
+                  key={message.id} 
+                  message={message}
+                />
+              ))}
+              
+              {currentEnhancedPrompt && !loading && (
+                <div className="mt-6 flex gap-3 justify-center">
+                  <Button
+                    onClick={handleExpand}
+                    className="bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 hover:text-blue-300 border border-blue-800/30"
+                    size="sm"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Expand
+                  </Button>
+                  <Button
+                    onClick={handleCondense}
+                    className="bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 hover:text-blue-300 border border-blue-800/30"
+                    size="sm"
+                  >
+                    <RotateCcw className="h-3 w-3 mr-1" />
+                    Condense
+                  </Button>
+                </div>
+              )}
+            </div>
           </>
         )}
         
         {loading && (
-          <div className="loading-container">
-            <div className="neo-blur p-10 rounded-2xl flex flex-col items-center">
-              <Loader2 className="loading-spinner" />
-              <p className="mt-6 text-blue-400 font-medium text-lg">Enhancing your prompt...</p>
-              <p className="text-sm text-white/50 mt-2">Powered by Groq's lightning-fast AI</p>
+          <div className="flex items-center justify-center py-8">
+            <div className="flex flex-col items-center">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-400 mb-4" />
+              <p className="text-blue-400 font-medium">Enhancing your prompt...</p>
+              <p className="text-sm text-white/50 mt-1">Powered by Groq's lightning-fast AI</p>
             </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-6">
-        <ChatInput 
-          value={inputText}
-          onChange={handleInputChange}
-          onSubmit={handleSendMessage}
-          disabled={loading}
-          placeholder="Paste your prompt here to enhance it with AI..."
-        />
+      {/* Input Area */}
+      <div className="border-t border-white/10 p-6">
+        <div className="max-w-4xl mx-auto">
+          <ChatInput 
+            value={inputText}
+            onChange={handleInputChange}
+            onSubmit={handleSendMessage}
+            disabled={loading}
+            placeholder="Write anything here..."
+          />
+        </div>
       </div>
       
       <ModelSelectionModal 

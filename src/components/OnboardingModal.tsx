@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
@@ -26,11 +27,13 @@ import { X } from 'lucide-react';
 interface OnboardingModalProps {
   isOpen: boolean;
   onComplete: () => void;
+  onSkip: () => void;
 }
 
-const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete }) => {
+const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete, onSkip }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const { user } = useUser();
   const [responses, setResponses] = useState({
     experience_level: '',
     primary_use_case: '',
@@ -40,11 +43,6 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete })
     industry: '',
     specific_needs: ''
   });
-
-  const handleSkip = () => {
-    toast.success('Welcome to PromptShift! You can complete your profile later.');
-    onComplete();
-  };
 
   const handleNext = () => {
     if (currentStep < 3) {
@@ -57,9 +55,6 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete })
   const handleComplete = async () => {
     setLoading(true);
     try {
-      // Try to get user, but don't fail if not authenticated
-      const { data: { user } } = await supabase.auth.getUser();
-      
       if (user) {
         const { error } = await supabase
           .from('onboarding_responses')
@@ -76,7 +71,6 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete })
       onComplete();
     } catch (error) {
       console.error('Error saving onboarding responses:', error);
-      // Don't show error to user, just complete onboarding
       toast.success('Welcome to PromptShift!');
       onComplete();
     } finally {
@@ -113,7 +107,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete })
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleSkip}
+              onClick={onSkip}
               className="text-white/60 hover:text-white hover:bg-white/10"
             >
               <X className="h-4 w-4 mr-1" />
@@ -286,7 +280,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComplete })
             <div className="flex gap-2">
               <Button
                 variant="ghost"
-                onClick={handleSkip}
+                onClick={onSkip}
                 className="text-white/60 hover:text-white"
               >
                 Skip for now
