@@ -21,7 +21,7 @@ export class EnhancedAnalytics {
     userId?: string;
   }) {
     try {
-      const sessionId = sessionTracker.getSessionId();
+      const sessionData = sessionTracker.getSessionData();
       
       // Store enhanced prompt
       const { error: promptError } = await supabase
@@ -46,6 +46,32 @@ export class EnhancedAnalytics {
         improvement_ratio: data.enhancedPrompt.length / data.originalPrompt.length
       });
 
+      // Update user prompt usage if user is logged in
+      if (data.userId) {
+        // Get current prompts_used count
+        const { data: profile, error: fetchError } = await supabase
+          .from('profiles')
+          .select('prompts_used')
+          .eq('id', data.userId)
+          .single();
+
+        if (!fetchError && profile) {
+          const newCount = (profile.prompts_used || 0) + 1;
+          
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ 
+              prompts_used: newCount,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', data.userId);
+
+          if (updateError) {
+            console.error('Error updating user prompt count:', updateError);
+          }
+        }
+      }
+
     } catch (error) {
       console.error('Error tracking prompt enhancement:', error);
     }
@@ -54,13 +80,14 @@ export class EnhancedAnalytics {
   // Track user engagement with tools
   async trackToolEngagement(toolName: string, durationSeconds: number, interactionCount: number = 1) {
     try {
-      const sessionId = sessionTracker.getSessionId();
+      const sessionData = sessionTracker.getSessionData();
+      const { data: { user } } = await supabase.auth.getUser();
 
       const { error } = await supabase
         .from('tool_engagement')
         .insert({
-          session_id: sessionId || 'unknown',
-          user_id: null,
+          session_id: sessionData?.sessionId || 'unknown',
+          user_id: user?.id || null,
           tool_name: toolName,
           engagement_duration_seconds: durationSeconds,
           interactions_count: interactionCount,
@@ -81,19 +108,21 @@ export class EnhancedAnalytics {
   // Track user feedback
   async trackUserFeedback(feedbackType: string, rating?: number, message?: string) {
     try {
-      const sessionId = sessionTracker.getSessionId();
+      const sessionData = sessionTracker.getSessionData();
+      const { data: { user } } = await supabase.auth.getUser();
 
       const { error } = await supabase
         .from('user_feedback')
         .insert({
-          session_id: sessionId || null,
-          user_id: null,
+          session_id: sessionData?.sessionId || null,
+          user_id: user?.id || null,
           feedback_type: feedbackType,
           rating: rating || null,
           message: message || null,
           page_url: window.location.href,
           metadata: {
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            session_duration: sessionTracker.getSessionDuration()
           }
         });
 
@@ -116,10 +145,49 @@ export class EnhancedAnalytics {
 
   // Track user journey milestones
   async trackMilestone(milestone: string, metadata?: Record<string, any>) {
-    await sessionTracker.trackEvent('milestone', {
+    await sessionTracker.trackEvent('signup', {
       milestone_name: milestone,
+      session_duration: sessionTracker.getSessionDuration(),
       ...metadata
     });
+  }
+
+  // Get user analytics summary
+  async getUserAnalytics(userId: string, days: number = 30) {
+    try {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      const [promptsResult, sessionsResult, feedbackResult] = await Promise.all([
+        supabase
+          .from('enhanced_prompts')
+          .select('*')
+          .eq('user_id', userId)
+          .gte('created_at', startDate.toISOString()),
+        
+        supabase
+          .from('user_sessions')
+          .select('*')
+          .eq('user_id', userId)
+          .gte('start_time', startDate.toISOString()),
+        
+        supabase
+          .from('user_feedback')
+          .select('*')
+          .eq('user_id', userId)
+          .gte('created_at', startDate.toISOString())
+      ]);
+
+      return {
+        prompts: promptsResult.data || [],
+        sessions: sessionsResult.data || [],
+        feedback: feedbackResult.data || [],
+        period_days: days
+      };
+    } catch (error) {
+      console.error('Error getting user analytics:', error);
+      return null;
+    }
   }
 }
 
