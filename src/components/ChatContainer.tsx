@@ -16,14 +16,12 @@ interface ChatContainerProps {
   className?: string;
   activePromptId?: string | null;
   onPromptSaved?: (prompt: any) => void;
-  userProfile?: any;
 }
 
 const ChatContainer: React.FC<ChatContainerProps> = ({ 
   className, 
   activePromptId, 
-  onPromptSaved,
-  userProfile 
+  onPromptSaved
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -107,12 +105,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
     
-    // Check if user can create new prompts
-    if (userProfile?.plan_type === 'free' && userProfile?.prompts_used >= 5) {
-      toast.error('Daily limit reached. Upgrade to Pro for unlimited enhancements.');
-      return;
-    }
-    
     setInputText("");
     setShowModelSelection(true);
   };
@@ -146,7 +138,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       setMessages(prev => [...prev, enhancedMessage]);
       setCurrentEnhancedPrompt(enhancedPrompt);
       
-      // Save to database
+      // Save to database if user is authenticated
       await savePromptToDatabase(inputText, enhancedPrompt, modelId);
       
       toast.success("Prompt enhanced successfully!");
@@ -248,7 +240,10 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
   const savePromptToDatabase = async (originalPrompt: string, enhancedPrompt: string, modelUsed: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        // User not authenticated, skip saving
+        return;
+      }
 
       const { data, error } = await supabase
         .from('enhanced_prompts')
@@ -263,24 +258,12 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
 
       if (error) throw error;
 
-      // Update user's prompt usage count
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ 
-          prompts_used: userProfile?.plan_type === 'free' 
-            ? (userProfile?.prompts_used || 0) + 1 
-            : (userProfile?.prompts_used || 0) + 1 
-        })
-        .eq('id', user.id);
-
-      if (updateError) console.error('Error updating usage count:', updateError);
-
       if (onPromptSaved) {
         onPromptSaved(data);
       }
     } catch (error) {
       console.error('Error saving prompt:', error);
-      toast.error('Prompt enhanced but failed to save');
+      // Don't show error to user since the enhancement still worked
     }
   };
 
