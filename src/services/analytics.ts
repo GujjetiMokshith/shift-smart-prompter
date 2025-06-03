@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 interface AnalyticsEvent {
@@ -7,29 +8,9 @@ interface AnalyticsEvent {
 
 class Analytics {
   private userId: string | null = null;
-  private maxRetries = 3;
-  private initialRetryDelay = 1000; // 1 second
 
   setUserId(userId: string | null) {
     this.userId = userId;
-  }
-
-  private async retryWithExponentialBackoff<T>(
-    operation: () => Promise<T>,
-    attempt = 1
-  ): Promise<T> {
-    try {
-      return await operation();
-    } catch (error) {
-      if (attempt > this.maxRetries) {
-        throw error;
-      }
-
-      const delay = this.initialRetryDelay * Math.pow(2, attempt - 1);
-      await new Promise(resolve => setTimeout(resolve, delay));
-      
-      return this.retryWithExponentialBackoff(operation, attempt + 1);
-    }
   }
 
   async trackEvent(eventType: string, metadata?: Record<string, any>) {
@@ -47,17 +28,15 @@ class Analytics {
         timestamp: new Date().toISOString()
       };
 
-      await this.retryWithExponentialBackoff(async () => {
-        const { error } = await supabase
-          .from('analytics_events')
-          .insert(eventData);
+      const { error } = await supabase
+        .from('analytics_events')
+        .insert(eventData);
 
-        if (error) {
-          throw error;
-        }
-      });
+      if (error) {
+        console.error('Analytics tracking error:', error);
+      }
     } catch (error) {
-      console.error('Analytics error after retries:', error);
+      console.error('Analytics error:', error);
     }
   }
 
@@ -94,26 +73,24 @@ class Analytics {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
-      await this.retryWithExponentialBackoff(async () => {
-        const { error } = await supabase
-          .from('user_feedback')
-          .insert({
-            user_id: user?.id || null,
-            feedback_type: feedbackType,
-            rating: rating || null,
-            message: message || null,
-            page_url: window.location.href,
-            metadata: {
-              timestamp: new Date().toISOString()
-            }
-          });
+      const { error } = await supabase
+        .from('user_feedback')
+        .insert({
+          user_id: user?.id || null,
+          feedback_type: feedbackType,
+          rating: rating || null,
+          message: message || null,
+          page_url: window.location.href,
+          metadata: {
+            timestamp: new Date().toISOString()
+          }
+        });
 
-        if (error) {
-          throw error;
-        }
-      });
+      if (error) {
+        console.error('Error tracking user feedback:', error);
+      }
     } catch (error) {
-      console.error('Error in trackUserFeedback after retries:', error);
+      console.error('Error in trackUserFeedback:', error);
     }
   }
 
