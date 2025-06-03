@@ -1,50 +1,17 @@
 import { Groq } from 'groq-sdk';
 import { analytics } from './analytics';
 
-export interface AIModelConfig {
-  id: string;
-  name: string;
-  description: string;
-  maxTokens: number;
-  temperature: number;
-  isPrimary?: boolean;
-}
-
 export interface EnhancePromptOptions {
   customSystemPrompt?: string;
   temperature?: number;
   maxTokens?: number;
+  targetService?: string;
 }
 
 export class AIService {
   private groq: Groq;
   private retryAttempts = 3;
   private retryDelay = 1000;
-
-  private models: AIModelConfig[] = [
-    {
-      id: "llama-3.3-70b-versatile",
-      name: "Llama 3.3",
-      description: "Versatile model optimized for reasoning and understanding",
-      maxTokens: 4000,
-      temperature: 0.7,
-      isPrimary: true
-    },
-    {
-      id: "mixtral-8x7b-32768",
-      name: "Mixtral 8x7B",
-      description: "High-performance model with extended context window",
-      maxTokens: 4000,
-      temperature: 0.7
-    },
-    {
-      id: "gemma2-9b-it",
-      name: "Gemma 2",
-      description: "Efficient model for instruction following and generation",
-      maxTokens: 4000,
-      temperature: 0.7
-    }
-  ];
 
   constructor() {
     if (!import.meta.env.VITE_GROQ_API_KEY) {
@@ -57,41 +24,28 @@ export class AIService {
     });
   }
 
-  public getModels(): AIModelConfig[] {
-    return this.models;
-  }
-
-  public getModel(modelId: string): AIModelConfig | undefined {
-    return this.models.find(model => model.id === modelId);
-  }
-
   public async enhancePrompt(
     prompt: string,
-    modelId: string,
+    targetService: string,
     options: EnhancePromptOptions = {}
   ): Promise<string> {
-    const model = this.getModel(modelId);
-    if (!model) {
-      throw new Error(`Model ${modelId} not found`);
-    }
-
     const startTime = Date.now();
     let lastError: Error | null = null;
 
-    const systemPrompt = options.customSystemPrompt || this.getDefaultSystemPrompt();
+    const systemPrompt = options.customSystemPrompt || this.getSystemPrompt(targetService);
 
     for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
       try {
-        console.log(`Attempt ${attempt}: Enhancing prompt with ${model.name}`);
+        console.log(`Attempt ${attempt}: Enhancing prompt for ${targetService}`);
 
         const completion = await this.groq.chat.completions.create({
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: prompt }
           ],
-          model: model.id,
-          temperature: options.temperature ?? model.temperature,
-          max_tokens: options.maxTokens ?? model.maxTokens,
+          model: "mixtral-8x7b-32768",
+          temperature: options.temperature ?? 0.7,
+          max_tokens: options.maxTokens ?? 4000,
           stream: false
         });
 
@@ -104,14 +58,14 @@ export class AIService {
         analytics.trackPromptEnhancement({
           originalPrompt: prompt,
           enhancedPrompt: result,
-          modelUsed: model.id,
+          modelUsed: targetService,
           enhancementTimeMs: Date.now() - startTime
         });
 
         return result;
       } catch (error: any) {
         lastError = error;
-        console.error(`❌ Error with ${model.name} (Attempt ${attempt}):`, error);
+        console.error(`❌ Error enhancing prompt (Attempt ${attempt}):`, error);
 
         if (attempt < this.retryAttempts) {
           await new Promise(resolve => 
@@ -128,21 +82,29 @@ export class AIService {
     );
   }
 
-  private getDefaultSystemPrompt(): string {
-    return `You are an expert prompt engineer specializing in transforming vague or basic prompts into highly detailed effective instructions.
+  private getSystemPrompt(targetService: string): string {
+    const basePrompt = `You are an expert prompt engineer specializing in transforming basic prompts into highly detailed, effective instructions optimized for ${targetService}.
 
-IMPORTANT: Your task is to completely rewrite and significantly enhance the user's prompt. DO NOT return a template or generic structure. DO NOT include any meta-commentary about the enhancement process.
+Your task is to enhance and rewrite the user's prompt to be more specific, detailed, and effective. Focus on:
 
-When enhancing a prompt, you MUST:
+1. Adding specific details, parameters, and constraints
+2. Expanding vague concepts with concrete specifications
+3. Including clear structure with sections or bullet points where appropriate
+4. Specifying technical requirements and deliverables
+5. Defining audience, purpose, and scope
+6. Adding relevant context and examples
 
-1. Add specific details, parameters, and constraints that were not in the original  
-2. Expand any vague concepts with concrete specifications  
-3. Add structure with clear sections, numbered points, or bullet lists where appropriate  
-4. Include technical specifications, formats, and deliverables  
-5. Specify audience, purpose, and scope where relevant  
-6. For technical prompts, add implementation details, technologies, and best practices  
+Make the prompt 3-5× more detailed while maintaining compatibility with ${targetService}'s capabilities and best practices.
 
-Your enhanced prompt should be 3–5× more detailed than the original. Return ONLY the enhanced prompt with no explanations or meta-commentary.`;
+Return ONLY the enhanced prompt with no explanations or meta-commentary.`;
+
+    const serviceSpecificInstructions = {
+      openai: "Ensure the prompt follows OpenAI's best practices and includes clear stop sequences, temperature recommendations, and token count considerations.",
+      anthropic: "Format the prompt to work well with Anthropic's Constitutional AI principles, including clear ethical boundaries and specific task constraints.",
+      general: "Create a universally compatible prompt that works well across different AI services while maintaining clarity and effectiveness."
+    };
+
+    return `${basePrompt}\n\nAdditional Instructions:\n${serviceSpecificInstructions[targetService as keyof typeof serviceSpecificInstructions] || serviceSpecificInstructions.general}`;
   }
 }
 
