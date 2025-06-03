@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { SearchIcon, Check, Zap, Brain, Sparkles } from 'lucide-react';
+import { SearchIcon, Check } from 'lucide-react';
 import { Button } from './ui/button';
-import { AIModelConfig } from '@/services/aiService';
+
+interface Model {
+  id: string;
+  name: string;
+  description: string;
+  isPrimary?: boolean;
+}
 
 interface ModelSelectionModalProps {
   isOpen: boolean;
@@ -20,66 +26,35 @@ const ModelSelectionModal: React.FC<ModelSelectionModalProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const models: AIModelConfig[] = [
+  const models: Model[] = [
     {
       id: "llama-3.3-70b-versatile",
       name: "Llama 3.3",
       description: "Versatile model optimized for reasoning and understanding",
-      maxTokens: 4000,
-      temperature: 0.7,
       isPrimary: true,
-      platform: 'groq'
     },
     {
       id: "mixtral-8x7b-32768",
       name: "Mixtral 8x7B",
       description: "High-performance model with extended context window",
-      maxTokens: 4000,
-      temperature: 0.7,
-      platform: 'groq'
     },
     {
-      id: "claude-3-sonnet",
-      name: "Claude 3 Sonnet",
-      description: "Anthropic's latest model with enhanced capabilities",
-      maxTokens: 4000,
-      temperature: 0.7,
-      platform: 'anthropic'
+      id: "gemma2-9b-it",
+      name: "Gemma 2",
+      description: "Efficient model for instruction following and generation",
     },
-    {
-      id: "gpt-4-turbo",
-      name: "GPT-4 Turbo",
-      description: "OpenAI's most capable model",
-      maxTokens: 4000,
-      temperature: 0.7,
-      platform: 'openai'
-    }
   ];
-
-  const getPlatformIcon = (platform: string) => {
-    switch (platform) {
-      case 'groq':
-        return <Zap className="h-4 w-4 text-purple-400" />;
-      case 'anthropic':
-        return <Brain className="h-4 w-4 text-blue-400" />;
-      case 'openai':
-        return <Sparkles className="h-4 w-4 text-green-400" />;
-      default:
-        return null;
-    }
-  };
 
   const filteredModels = models.filter(model => 
     model.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    model.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    model.platform.toLowerCase().includes(searchQuery.toLowerCase())
+    model.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-[#030712] border border-white/5 text-white w-full max-w-md p-0 overflow-hidden glow-blue">
         <DialogHeader className="p-6 pb-2">
-          <DialogTitle className="text-xl font-bold text-gradient-blue">Select AI Platform</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-gradient-blue">Select AI Model</DialogTitle>
           <p className="text-sm text-white/70 mt-1">Choose which AI model to optimize your prompt for</p>
         </DialogHeader>
         
@@ -108,8 +83,7 @@ const ModelSelectionModal: React.FC<ModelSelectionModalProps> = ({
                 onClick={() => onSelectModel(model.id)}
               >
                 <div className="flex flex-col items-start">
-                  <span className="font-medium flex items-center gap-2">
-                    {getPlatformIcon(model.platform)}
+                  <span className="font-medium flex items-center gap-1">
                     {model.name}
                     {model.isPrimary && (
                       <span className="text-[10px] bg-green-500/20 text-green-400 px-1 rounded">
