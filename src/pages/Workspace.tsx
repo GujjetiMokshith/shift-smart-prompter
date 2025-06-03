@@ -1,26 +1,30 @@
+
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import ChatContainer from '@/components/ChatContainer';
-import OnboardingModal from '@/components/OnboardingModal';
 import Sidebar from '@/components/workspace/Sidebar';
 import WelcomeScreen from '@/components/workspace/WelcomeScreen';
 import { Toaster } from 'sonner';
-import { sessionTracker } from '@/services/sessionTracker';
 
 const Workspace = () => {
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [hasMessages, setHasMessages] = useState(false);
   const [inputValue, setInputValue] = useState('');
-
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
-    sessionTracker.trackEvent('onboarding_completed');
-  };
+  const [chatHistory, setChatHistory] = useState<Array<{id: string, title: string, timestamp: Date}>>([]);
 
   const handleNewChat = () => {
     setHasMessages(false);
     setInputValue('');
+    
+    // Add current chat to history if it has content
+    if (hasMessages) {
+      const newChat = {
+        id: Date.now().toString(),
+        title: inputValue.slice(0, 50) + (inputValue.length > 50 ? '...' : ''),
+        timestamp: new Date()
+      };
+      setChatHistory(prev => [newChat, ...prev]);
+    }
   };
 
   const handleExampleClick = (example: string) => {
@@ -37,6 +41,7 @@ const Workspace = () => {
       <Sidebar 
         isCollapsed={sidebarCollapsed} 
         onNewChat={handleNewChat}
+        chatHistory={chatHistory}
       />
       
       <div className="flex-1 flex flex-col">
@@ -58,11 +63,6 @@ const Workspace = () => {
           )}
         </main>
       </div>
-
-      <OnboardingModal 
-        isOpen={showOnboarding} 
-        onComplete={handleOnboardingComplete} 
-      />
       
       <Toaster position="bottom-right" />
     </div>

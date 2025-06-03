@@ -21,7 +21,7 @@ export class EnhancedAnalytics {
     userId?: string;
   }) {
     try {
-      const sessionData = sessionTracker.getSessionData();
+      const sessionId = sessionTracker.getSessionId();
       
       // Store enhanced prompt
       const { error: promptError } = await supabase
@@ -80,14 +80,13 @@ export class EnhancedAnalytics {
   // Track user engagement with tools
   async trackToolEngagement(toolName: string, durationSeconds: number, interactionCount: number = 1) {
     try {
-      const sessionData = sessionTracker.getSessionData();
-      const { data: { user } } = await supabase.auth.getUser();
+      const sessionId = sessionTracker.getSessionId();
 
       const { error } = await supabase
         .from('tool_engagement')
         .insert({
-          session_id: sessionData?.sessionId || 'unknown',
-          user_id: user?.id || null,
+          session_id: sessionId || 'unknown',
+          user_id: null,
           tool_name: toolName,
           engagement_duration_seconds: durationSeconds,
           interactions_count: interactionCount,
@@ -108,21 +107,20 @@ export class EnhancedAnalytics {
   // Track user feedback
   async trackUserFeedback(feedbackType: string, rating?: number, message?: string) {
     try {
-      const sessionData = sessionTracker.getSessionData();
-      const { data: { user } } = await supabase.auth.getUser();
+      const sessionId = sessionTracker.getSessionId();
 
       const { error } = await supabase
         .from('user_feedback')
         .insert({
-          session_id: sessionData?.sessionId || null,
-          user_id: user?.id || null,
+          session_id: sessionId || null,
+          user_id: null,
           feedback_type: feedbackType,
           rating: rating || null,
           message: message || null,
           page_url: window.location.href,
           metadata: {
             timestamp: new Date().toISOString(),
-            session_duration: sessionTracker.getSessionDuration()
+            session_duration: Date.now() - new Date().getTime()
           }
         });
 
@@ -147,7 +145,7 @@ export class EnhancedAnalytics {
   async trackMilestone(milestone: string, metadata?: Record<string, any>) {
     await sessionTracker.trackEvent('signup', {
       milestone_name: milestone,
-      session_duration: sessionTracker.getSessionDuration(),
+      session_duration: Date.now() - new Date().getTime(),
       ...metadata
     });
   }

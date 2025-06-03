@@ -1,38 +1,15 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Header from "@/components/Header";
 import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Zap, Check, Star, Rocket, Shield, Clock, Users, Brain, Target, TrendingUp, Cpu, Layers, Coffee } from "lucide-react";
 import ChatInput from "@/components/ChatInput";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import AuthModal from "@/components/AuthModal";
 
 const Index = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [showAuth, setShowAuth] = useState(false);
-  
-  useEffect(() => {
-    // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
   
   const handlePromptSubmit = (prompt: string) => {
-    if (!user) {
-      setShowAuth(true);
-      return;
-    }
     localStorage.setItem("pendingPrompt", prompt);
     navigate("/workspace");
   };
@@ -160,7 +137,7 @@ const Index = () => {
                 onSubmit={handlePromptSubmit}
               />
               <div className="mt-6 text-sm text-white/50 flex justify-between items-center">
-                <span>Press enter to enhance • {user ? 'Ready to enhance' : 'Sign in required'}</span>
+                <span>Press enter to enhance • Ready to enhance</span>
                 <div className="flex items-center gap-4">
                   <span className="text-green-400 flex items-center gap-1">
                     <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
@@ -332,10 +309,12 @@ const Index = () => {
                   size="lg"
                   variant="outline"
                   className="border-white/20 text-white hover:bg-white/5"
-                  onClick={() => !user && setShowAuth(true)}
+                  asChild
                 >
-                  Start Using Free
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <Link to="/workspace">
+                    Start Using Free
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
               </div>
               <p className="text-sm text-white/50 mt-6">
@@ -359,10 +338,12 @@ const Index = () => {
                 <Button 
                   size="lg"
                   className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white hover-glow px-8"
-                  onClick={() => !user && setShowAuth(true)}
+                  asChild
                 >
-                  Get Started Free
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <Link to="/workspace">
+                    Get Started Free
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
                 <Button 
                   size="lg"
@@ -448,7 +429,6 @@ const Index = () => {
         </div>
       </footer>
       
-      <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
       <Toaster position="bottom-right" />
     </div>
   );

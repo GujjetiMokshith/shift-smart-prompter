@@ -9,7 +9,6 @@ import { Loader2, Plus, RotateCcw } from "lucide-react";
 import ModelSelectionModal from "./ModelSelectionModal";
 import SettingsModal from "./SettingsModal";
 import { supabase } from "@/integrations/supabase/client";
-import { useUser } from '@clerk/clerk-react';
 import Groq from "groq-sdk";
 import { Button } from "./ui/button";
 
@@ -28,7 +27,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   initialInput = '',
   onMessageSent
 }) => {
-  const { user } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
@@ -151,7 +149,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       setMessages(prev => [...prev, enhancedMessage]);
       setCurrentEnhancedPrompt(enhancedPrompt);
       
-      // Save to database if user is authenticated
+      // Save to database
       await savePromptToDatabase(inputText, enhancedPrompt, modelId);
       
       toast.success("Prompt enhanced successfully!");
@@ -252,15 +250,10 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
 
   const savePromptToDatabase = async (originalPrompt: string, enhancedPrompt: string, modelUsed: string) => {
     try {
-      if (!user) {
-        // User not authenticated, skip saving
-        return;
-      }
-
       const { data, error } = await supabase
         .from('enhanced_prompts')
         .insert({
-          user_id: user.id,
+          user_id: null, // No user authentication
           original_prompt: originalPrompt,
           enhanced_prompt: enhancedPrompt,
           model_used: modelUsed
@@ -373,7 +366,7 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
               size="sm"
             >
               <Plus className="h-3 w-3 mr-1" />
-              Expand
+              More Detailed
             </Button>
             <Button
               onClick={handleCondense}
