@@ -1,7 +1,6 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { GroqService } from '@/services/groqService';
+import { aiService } from '@/services/aiService';
 import { PromptService } from '@/services/promptService';
 
 interface Chat {
@@ -25,7 +24,6 @@ interface UseChatOperationsProps {
 export const useChatOperations = ({ chat, onAddMessage, onUpdateTitle }: UseChatOperationsProps) => {
   const [loading, setLoading] = useState(false);
   const [currentEnhancedPrompt, setCurrentEnhancedPrompt] = useState("");
-  const groqService = new GroqService();
 
   const enhancePrompt = async (
     inputText: string, 
@@ -33,7 +31,6 @@ export const useChatOperations = ({ chat, onAddMessage, onUpdateTitle }: UseChat
     isCustomPrompt: boolean, 
     customSystemPrompt: string
   ) => {
-    // Add user message
     onAddMessage({
       type: "user",
       content: inputText
@@ -43,13 +40,14 @@ export const useChatOperations = ({ chat, onAddMessage, onUpdateTitle }: UseChat
     
     try {
       console.log('Starting prompt enhancement with model:', selectedModel);
-      const enhancedPrompt = await groqService.enhancePrompt(
+      const enhancedPrompt = await aiService.enhancePrompt(
         inputText, 
         selectedModel, 
-        isCustomPrompt ? customSystemPrompt : undefined
+        {
+          customSystemPrompt: isCustomPrompt ? customSystemPrompt : undefined
+        }
       );
       
-      // Add AI response
       onAddMessage({
         type: "assistant",
         content: enhancedPrompt
@@ -57,13 +55,11 @@ export const useChatOperations = ({ chat, onAddMessage, onUpdateTitle }: UseChat
       
       setCurrentEnhancedPrompt(enhancedPrompt);
       
-      // Update chat title if it's the first message
       if (chat.messages.length === 0) {
         const newTitle = inputText.slice(0, 30) + (inputText.length > 30 ? '...' : '');
         onUpdateTitle(chat.id, newTitle);
       }
       
-      // Save to database
       await PromptService.savePrompt({
         originalPrompt: inputText,
         enhancedPrompt: enhancedPrompt,
@@ -89,7 +85,7 @@ export const useChatOperations = ({ chat, onAddMessage, onUpdateTitle }: UseChat
     
     setLoading(true);
     try {
-      const expandedPrompt = await groqService.enhancePrompt(
+      const expandedPrompt = await aiService.enhancePrompt(
         `Expand this prompt to be even more detailed and comprehensive: ${currentEnhancedPrompt}`,
         selectedModel
       );
@@ -113,7 +109,7 @@ export const useChatOperations = ({ chat, onAddMessage, onUpdateTitle }: UseChat
     
     setLoading(true);
     try {
-      const condensedPrompt = await groqService.enhancePrompt(
+      const condensedPrompt = await aiService.enhancePrompt(
         `Make this prompt more concise while keeping all essential details: ${currentEnhancedPrompt}`,
         selectedModel
       );
