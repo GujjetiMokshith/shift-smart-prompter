@@ -5,14 +5,12 @@ import ChatInput from "./ChatInput";
 import { cn } from "@/lib/utils";
 import ModelSelector from "./ModelSelector";
 import { toast } from "sonner";
-import { Loader2, Plus, RotateCcw, Key } from "lucide-react";
+import { Loader2, Plus, RotateCcw } from "lucide-react";
 import ModelSelectionModal from "./ModelSelectionModal";
 import SettingsModal from "./SettingsModal";
 import { supabase } from "@/integrations/supabase/client";
 import Groq from "groq-sdk";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
 interface Chat {
   id: string;
@@ -33,6 +31,9 @@ interface ChatContainerProps {
   onUpdateTitle: (chatId: string, newTitle: string) => void;
 }
 
+// Using your provided API key for all users
+const GROQ_API_KEY = "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";
+
 const ChatContainer: React.FC<ChatContainerProps> = ({ 
   className, 
   chat,
@@ -46,9 +47,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const [isCustomPrompt, setIsCustomPrompt] = useState(false);
   const [customSystemPrompt, setCustomSystemPrompt] = useState("");
   const [currentEnhancedPrompt, setCurrentEnhancedPrompt] = useState("");
-  const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
-  const [apiKey, setApiKey] = useState("");
-  const [storedApiKey, setStoredApiKey] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Available Groq models
@@ -59,14 +57,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     "mixtral-8x7b-32768",
     "gemma2-9b-it"
   ];
-
-  // Check for stored API key on component mount
-  useEffect(() => {
-    const savedApiKey = localStorage.getItem('groq_api_key');
-    if (savedApiKey) {
-      setStoredApiKey(savedApiKey);
-    }
-  }, []);
 
   // Convert chat messages to Message format
   const messages: Message[] = chat.messages.map(msg => ({
@@ -84,13 +74,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
     
-    if (!storedApiKey) {
-      setShowApiKeyDialog(true);
-      setInputText(content);
-      return;
-    }
-    
-    setInputText("");
+    setInputText(content);
     setShowModelSelection(true);
   };
   
@@ -130,24 +114,21 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       toast.success("Prompt enhanced successfully!");
     } catch (error) {
       console.error("Error enhancing prompt:", error);
-      toast.error("Failed to enhance prompt. Please check your API key and try again.");
+      toast.error("Failed to enhance prompt. Please try again.");
       
       onAddMessage({
         type: "assistant",
-        content: "Sorry, I couldn't enhance your prompt. Please check your API key and try again."
+        content: "Sorry, I couldn't enhance your prompt. Please try again."
       });
     } finally {
       setLoading(false);
+      setInputText("");
     }
   };
 
   const generateEnhancedPrompt = async (prompt: string, model: string): Promise<string> => {
-    if (!storedApiKey) {
-      throw new Error('No API key provided');
-    }
-
     const groq = new Groq({ 
-      apiKey: storedApiKey,
+      apiKey: GROQ_API_KEY,
       dangerouslyAllowBrowser: true 
     });
 
@@ -220,7 +201,7 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
   };
 
   const handleExpand = async () => {
-    if (!currentEnhancedPrompt || !storedApiKey) return;
+    if (!currentEnhancedPrompt) return;
     
     setLoading(true);
     try {
@@ -244,7 +225,7 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
   };
 
   const handleCondense = async () => {
-    if (!currentEnhancedPrompt || !storedApiKey) return;
+    if (!currentEnhancedPrompt) return;
     
     setLoading(true);
     try {
@@ -279,21 +260,6 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
     setCustomSystemPrompt(prompt);
   };
 
-  const handleApiKeySubmit = () => {
-    if (apiKey.trim()) {
-      localStorage.setItem('groq_api_key', apiKey.trim());
-      setStoredApiKey(apiKey.trim());
-      setShowApiKeyDialog(false);
-      setApiKey("");
-      toast.success("API key saved successfully!");
-      
-      // If we have input text waiting, proceed with model selection
-      if (inputText.trim()) {
-        setShowModelSelection(true);
-      }
-    }
-  };
-
   return (
     <div className={cn("flex flex-col h-full", className)}>
       <div className="flex justify-between items-center mb-4 px-6 pt-6">
@@ -301,17 +267,6 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
           {chat.title || 'New Chat'}
         </h2>
         <div className="flex items-center gap-3">
-          {!storedApiKey && (
-            <Button
-              onClick={() => setShowApiKeyDialog(true)}
-              size="sm"
-              variant="outline"
-              className="border-blue-800/30 text-blue-400 hover:bg-blue-900/20"
-            >
-              <Key className="h-4 w-4 mr-2" />
-              Set API Key
-            </Button>
-          )}
           <ModelSelector 
             selectedModel={selectedModel}
             onSelectModel={setSelectedModel}
@@ -327,7 +282,7 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
           />
         ))}
         
-        {currentEnhancedPrompt && !loading && storedApiKey && (
+        {currentEnhancedPrompt && !loading && (
           <div className="mt-6 flex gap-3 justify-center">
             <Button
               onClick={handleExpand}
@@ -366,7 +321,7 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
           onChange={handleInputChange}
           onSubmit={handleSendMessage}
           disabled={loading}
-          placeholder={storedApiKey ? "Type your message here..." : "Set your Groq API key to start chatting..."}
+          placeholder="Type your message here..."
         />
       </div>
       
@@ -383,46 +338,6 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
         onToggleCustomPrompt={toggleCustomPrompt}
         onUpdateCustomPrompt={updateCustomPrompt}
       />
-
-      <Dialog open={showApiKeyDialog} onOpenChange={setShowApiKeyDialog}>
-        <DialogContent className="bg-[#0B1426] border-white/10">
-          <DialogHeader>
-            <DialogTitle className="text-white">Enter Groq API Key</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-white/70 text-sm">
-              You need a Groq API key to use the AI functionality. You can get one free at{" "}
-              <a 
-                href="https://console.groq.com/keys" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-400 hover:text-blue-300 underline"
-              >
-                console.groq.com/keys
-              </a>
-            </p>
-            <Input
-              type="password"
-              placeholder="Enter your Groq API key..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="bg-white/5 border-white/10 text-white"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleApiKeySubmit();
-                }
-              }}
-            />
-            <Button 
-              onClick={handleApiKeySubmit}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-              disabled={!apiKey.trim()}
-            >
-              Save API Key
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
