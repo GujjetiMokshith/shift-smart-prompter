@@ -1,11 +1,12 @@
-
 import Groq from "groq-sdk";
 
-// Using your provided API key for all users
-const GROQ_API_KEY = "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";
+// Using environment variable for API key
+const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || "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";
 
 export class GroqService {
   private groq: Groq;
+  private retryAttempts = 3;
+  private retryDelay = 1000; // 1 second
 
   constructor() {
     this.groq = new Groq({ 
@@ -35,31 +36,42 @@ Example transformations:
 
 Your enhanced prompt should be 3–5× more detailed than the original. Return ONLY the enhanced prompt with no explanations or meta-commentary.`;
 
-    try {
-      console.log(`Trying model: ${model}`);
-      
-      const completion = await this.groq.chat.completions.create({
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: prompt }
-        ],
-        model: model,
-        temperature: 0.7,
-        max_tokens: 4000,
-        stream: false
-      });
+    let lastError: Error | null = null;
+    
+    for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
+      try {
+        console.log(`Attempt ${attempt}: Trying model ${model}`);
+        
+        const completion = await this.groq.chat.completions.create({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: prompt }
+          ],
+          model: model,
+          temperature: 0.7,
+          max_tokens: 4000,
+          stream: false
+        });
 
-      const result = completion.choices[0]?.message?.content;
-      if (result) {
-        console.log(`✅ Success with model: ${model}`);
-        return result;
-      } else {
-        throw new Error('No content in response');
+        const result = completion.choices[0]?.message?.content;
+        if (result) {
+          console.log(`✅ Success with model: ${model}`);
+          return result;
+        } else {
+          throw new Error('No content in response');
+        }
+      } catch (error: any) {
+        lastError = error;
+        console.error(`❌ Error with ${model} (Attempt ${attempt}):`, error);
+        
+        if (attempt < this.retryAttempts) {
+          await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
+          continue;
+        }
       }
-    } catch (error: any) {
-      console.error(`❌ Error with ${model}:`, error);
-      throw error;
     }
+
+    throw new Error(`Failed to enhance prompt after ${this.retryAttempts} attempts. Last error: ${lastError?.message}`);
   }
 
   getAvailableModels(): string[] {
