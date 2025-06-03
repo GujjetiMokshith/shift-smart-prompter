@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,25 +24,20 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
 
   const models: Model[] = [
     {
-      id: "llama-4",
-      name: "Llama 4",
-      description: "Optimized for reasoning and understanding",
+      id: "llama-3.3-70b-versatile",
+      name: "Llama 3.3",
+      description: "Versatile model optimized for reasoning and understanding",
       isPrimary: true,
     },
     {
-      id: "claude",
-      name: "Claude",
-      description: "Balanced performance with nuanced responses",
+      id: "mixtral-8x7b-32768",
+      name: "Mixtral 8x7B",
+      description: "High-performance model with extended context window",
     },
     {
-      id: "chatgpt",
-      name: "ChatGPT",
-      description: "Great at following structured instructions",
-    },
-    {
-      id: "mistral",
-      name: "Mistral AI",
-      description: "Excellent for technical and precise tasks",
+      id: "gemma2-9b-it",
+      name: "Gemma 2",
+      description: "Efficient model for instruction following and generation",
     },
   ];
 
