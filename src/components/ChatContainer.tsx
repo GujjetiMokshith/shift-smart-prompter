@@ -144,8 +144,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       <ModelSelectionModal 
         isOpen={showModelSelection} 
         onClose={() => setShowModelSelection(false)}
-        onSelectModel={proceedWithModel}
-        currentModel={selectedModel}
+        onSelectService={proceedWithModel}
+        currentService={selectedModel}
       />
       
       <SettingsModal
