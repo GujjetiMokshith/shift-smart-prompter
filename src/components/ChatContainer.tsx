@@ -8,6 +8,8 @@ import SettingsModal from "./SettingsModal";
 import ChatActionButtons from "./ChatActionButtons";
 import ChatLoadingIndicator from "./ChatLoadingIndicator";
 import { useChatOperations } from "@/hooks/useChatOperations";
+import { AIServiceError } from "@/services/aiService";
+import { toast } from "sonner";
 
 interface Chat {
   id: string;
@@ -73,16 +75,54 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     setSelectedService(serviceId);
     setShowModelSelection(false);
     
-    await enhancePrompt(inputText, serviceId, isCustomPrompt, customSystemPrompt);
-    setInputText("");
+    try {
+      await enhancePrompt(inputText, serviceId, isCustomPrompt, customSystemPrompt);
+      setInputText("");
+    } catch (error) {
+      if (error instanceof AIServiceError) {
+        // Display user-friendly error message based on error code
+        toast.error(error.message);
+        
+        // Add error message to chat
+        onAddMessage({
+          type: "assistant",
+          content: `⚠️ ${error.message}\n\nPlease try again or contact support if the issue persists.`
+        });
+      } else {
+        // Handle unexpected errors
+        console.error("Unexpected error:", error);
+        toast.error("An unexpected error occurred. Please try again.");
+        
+        onAddMessage({
+          type: "assistant",
+          content: "Sorry, an unexpected error occurred. Please try again or contact support if the issue persists."
+        });
+      }
+    }
   };
 
   const handleExpand = async () => {
-    await expandPrompt(selectedService);
+    try {
+      await expandPrompt(selectedService);
+    } catch (error) {
+      if (error instanceof AIServiceError) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to expand prompt. Please try again.");
+      }
+    }
   };
 
   const handleCondense = async () => {
-    await condensePrompt(selectedService);
+    try {
+      await condensePrompt(selectedService);
+    } catch (error) {
+      if (error instanceof AIServiceError) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to condense prompt. Please try again.");
+      }
+    }
   };
 
   const handleInputChange = (text: string) => {
