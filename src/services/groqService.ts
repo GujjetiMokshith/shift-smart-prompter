@@ -1,7 +1,11 @@
 import Groq from "groq-sdk";
 
 // Using environment variable for API key
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || "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";
+const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
+
+if (!GROQ_API_KEY) {
+  console.error('GROQ_API_KEY is not set in environment variables');
+}
 
 export class GroqService {
   private groq: Groq;
@@ -42,6 +46,10 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
       try {
         console.log(`Attempt ${attempt}: Trying model ${model}`);
         
+        if (!GROQ_API_KEY) {
+          throw new Error('GROQ_API_KEY is not configured. Please check your environment variables.');
+        }
+        
         const completion = await this.groq.chat.completions.create({
           messages: [
             { role: "system", content: systemPrompt },
@@ -64,8 +72,15 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
         lastError = error;
         console.error(`❌ Error with ${model} (Attempt ${attempt}):`, error);
         
+        // Check if error is due to invalid API key
+        if (error.message?.includes('API key')) {
+          throw new Error('Invalid API key. Please check your GROQ_API_KEY environment variable.');
+        }
+        
+        // If we haven't reached max retries, wait and try again
         if (attempt < this.retryAttempts) {
-          await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
+          // Exponential backoff
+          await new Promise(resolve => setTimeout(resolve, this.retryDelay * Math.pow(2, attempt - 1)));
           continue;
         }
       }
