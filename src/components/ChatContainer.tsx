@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import ChatMessage, { Message, MessageType } from "./ChatMessage";
 import ChatInput from "./ChatInput";
@@ -12,26 +11,35 @@ import { supabase } from "@/integrations/supabase/client";
 import Groq from "groq-sdk";
 import { Button } from "./ui/button";
 
+interface Chat {
+  id: string;
+  title: string;
+  timestamp: Date;
+  messages: Array<{
+    id: string;
+    type: 'user' | 'assistant';
+    content: string;
+    timestamp: Date;
+  }>;
+}
+
 interface ChatContainerProps {
   className?: string;
-  activePromptId?: string | null;
-  onPromptSaved?: (prompt: any) => void;
-  initialInput?: string;
-  onMessageSent?: () => void;
+  chat: Chat;
+  onAddMessage: (message: { type: 'user' | 'assistant'; content: string }) => void;
+  onUpdateTitle: (chatId: string, newTitle: string) => void;
 }
 
 const ChatContainer: React.FC<ChatContainerProps> = ({ 
   className, 
-  activePromptId, 
-  onPromptSaved,
-  initialInput = '',
-  onMessageSent
+  chat,
+  onAddMessage,
+  onUpdateTitle
 }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
   const [showModelSelection, setShowModelSelection] = useState(false);
-  const [inputText, setInputText] = useState(initialInput);
+  const [inputText, setInputText] = useState("");
   const [isCustomPrompt, setIsCustomPrompt] = useState(false);
   const [customSystemPrompt, setCustomSystemPrompt] = useState("");
   const [currentEnhancedPrompt, setCurrentEnhancedPrompt] = useState("");
@@ -52,61 +60,14 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     "gemma2-9b-it"
   ];
 
-  useEffect(() => {
-    if (initialInput) {
-      setInputText(initialInput);
-    }
-  }, [initialInput]);
-
-  // Load active prompt data
-  useEffect(() => {
-    if (activePromptId) {
-      loadPromptData(activePromptId);
-    } else {
-      setMessages([]);
-      setCurrentEnhancedPrompt("");
-      // Check for pending prompt from landing page
-      const pendingPrompt = localStorage.getItem("pendingPrompt");
-      if (pendingPrompt) {
-        setInputText(pendingPrompt);
-        localStorage.removeItem("pendingPrompt");
-      }
-    }
-  }, [activePromptId]);
-
-  const loadPromptData = async (promptId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('enhanced_prompts')
-        .select('*')
-        .eq('id', promptId)
-        .single();
-
-      if (error) throw error;
-
-      const userMessage: Message = {
-        id: '1',
-        type: 'user',
-        content: data.original_prompt,
-        timestamp: new Date(data.created_at),
-      };
-
-      const assistantMessage: Message = {
-        id: '2',
-        type: 'assistant',
-        content: data.enhanced_prompt,
-        isEnhanced: true,
-        timestamp: new Date(data.created_at),
-      };
-
-      setMessages([userMessage, assistantMessage]);
-      setCurrentEnhancedPrompt(data.enhanced_prompt);
-      setSelectedModel(data.model_used);
-    } catch (error) {
-      console.error('Error loading prompt:', error);
-      toast.error('Failed to load prompt');
-    }
-  };
+  // Convert chat messages to Message format
+  const messages: Message[] = chat.messages.map(msg => ({
+    id: msg.id,
+    type: msg.type as MessageType,
+    content: msg.content,
+    timestamp: msg.timestamp,
+    isEnhanced: msg.type === 'assistant'
+  }));
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -117,37 +78,37 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     
     setInputText("");
     setShowModelSelection(true);
-    if (onMessageSent) onMessageSent();
   };
   
   const proceedWithModel = async (modelId: string) => {
     setSelectedModel(modelId);
     setShowModelSelection(false);
     
-    const userMessage: Message = {
-      id: Date.now().toString(),
+    // Add user message
+    onAddMessage({
       type: "user",
-      content: inputText,
-      timestamp: new Date(),
-    };
+      content: inputText
+    });
     
-    setMessages([userMessage]);
     setLoading(true);
     
     try {
       console.log('Starting prompt enhancement with model:', modelId);
       const enhancedPrompt = await generateEnhancedPrompt(inputText, modelId);
       
-      const enhancedMessage: Message = {
-        id: (Date.now() + 1).toString(),
+      // Add AI response
+      onAddMessage({
         type: "assistant",
-        content: enhancedPrompt,
-        isEnhanced: true,
-        timestamp: new Date(),
-      };
+        content: enhancedPrompt
+      });
       
-      setMessages(prev => [...prev, enhancedMessage]);
       setCurrentEnhancedPrompt(enhancedPrompt);
+      
+      // Update chat title if it's the first message
+      if (chat.messages.length === 0) {
+        const newTitle = inputText.slice(0, 30) + (inputText.length > 30 ? '...' : '');
+        onUpdateTitle(chat.id, newTitle);
+      }
       
       // Save to database
       await savePromptToDatabase(inputText, enhancedPrompt, modelId);
@@ -157,15 +118,10 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       console.error("Error enhancing prompt:", error);
       toast.error("Failed to enhance prompt. Please try again.");
       
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
+      onAddMessage({
         type: "assistant",
-        content: "Sorry, I couldn't enhance your prompt. Please try again later.",
-        isEnhanced: false,
-        timestamp: new Date(),
-      };
-      
-      setMessages(prev => [...prev, errorMessage]);
+        content: "Sorry, I couldn't enhance your prompt. Please try again later."
+      });
     } finally {
       setLoading(false);
     }
@@ -231,13 +187,13 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
             console.log(`⏳ Rate limit hit for ${currentModel}`);
             retryCount++;
             if (retryCount < 3) {
-              const waitTime = 2; // Wait 2 seconds before retry
+              const waitTime = 2;
               console.log(`Waiting ${waitTime} seconds...`);
               await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
               continue;
             }
           }
-          break; // Try next model
+          break;
         }
       }
       
@@ -253,7 +209,7 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
       const { data, error } = await supabase
         .from('enhanced_prompts')
         .insert({
-          user_id: null, // No user authentication
+          user_id: null,
           original_prompt: originalPrompt,
           enhanced_prompt: enhancedPrompt,
           model_used: modelUsed
@@ -262,13 +218,8 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
         .single();
 
       if (error) throw error;
-
-      if (onPromptSaved) {
-        onPromptSaved(data);
-      }
     } catch (error) {
       console.error('Error saving prompt:', error);
-      // Don't show error to user since the enhancement still worked
     }
   };
 
@@ -282,15 +233,11 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
         selectedModel
       );
       
-      const expandedMessage: Message = {
-        id: Date.now().toString(),
+      onAddMessage({
         type: "assistant",
-        content: expandedPrompt,
-        isEnhanced: true,
-        timestamp: new Date(),
-      };
+        content: expandedPrompt
+      });
       
-      setMessages(prev => [...prev, expandedMessage]);
       setCurrentEnhancedPrompt(expandedPrompt);
       toast.success("Prompt expanded successfully!");
     } catch (error) {
@@ -310,15 +257,11 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
         selectedModel
       );
       
-      const condensedMessage: Message = {
-        id: Date.now().toString(),
+      onAddMessage({
         type: "assistant",
-        content: condensedPrompt,
-        isEnhanced: true,
-        timestamp: new Date(),
-      };
+        content: condensedPrompt
+      });
       
-      setMessages(prev => [...prev, condensedMessage]);
       setCurrentEnhancedPrompt(condensedPrompt);
       toast.success("Prompt condensed successfully!");
     } catch (error) {
@@ -343,7 +286,9 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
   return (
     <div className={cn("flex flex-col h-full", className)}>
       <div className="flex justify-between items-center mb-4 px-6 pt-6">
-        <h2 className="text-xl font-medium text-gradient-blue">Enhance Your Prompts</h2>
+        <h2 className="text-xl font-medium text-gradient-blue">
+          {chat.title || 'New Chat'}
+        </h2>
         <ModelSelector 
           selectedModel={selectedModel}
           onSelectModel={setSelectedModel}
@@ -397,7 +342,7 @@ Your enhanced prompt should be 3–5× more detailed than the original. Return O
           onChange={handleInputChange}
           onSubmit={handleSendMessage}
           disabled={loading}
-          placeholder="Paste your prompt here to enhance it with AI..."
+          placeholder="Type your message here..."
         />
       </div>
       

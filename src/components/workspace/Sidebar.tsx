@@ -14,9 +14,17 @@ interface SidebarProps {
   isCollapsed: boolean;
   onNewChat: () => void;
   chatHistory: ChatHistoryItem[];
+  activeChat: ChatHistoryItem | null;
+  onSelectChat: (chatId: string) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onNewChat, chatHistory }) => {
+const Sidebar: React.FC<SidebarProps> = ({ 
+  isCollapsed, 
+  onNewChat, 
+  chatHistory, 
+  activeChat, 
+  onSelectChat 
+}) => {
   if (isCollapsed) {
     return (
       <div className="w-12 bg-[#0B1426] border-r border-white/10 flex flex-col items-center py-4 space-y-3">
@@ -25,6 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onNewChat, chatHistory }
           size="sm"
           onClick={onNewChat}
           className="w-8 h-8 p-0 text-white/70 hover:text-white hover:bg-white/10"
+          title="New Chat"
         >
           <Plus className="h-4 w-4" />
         </Button>
@@ -67,7 +76,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onNewChat, chatHistory }
               <Button
                 key={chat.id}
                 variant="ghost"
-                className="w-full justify-start text-white/70 hover:text-white hover:bg-white/10 h-auto py-2 px-3"
+                onClick={() => onSelectChat(chat.id)}
+                className={`w-full justify-start text-white/70 hover:text-white hover:bg-white/10 h-auto py-2 px-3 ${
+                  activeChat?.id === chat.id ? 'bg-white/10 text-white' : ''
+                }`}
               >
                 <div className="flex items-start gap-2 w-full">
                   <MessageSquare className="h-4 w-4 mt-0.5 flex-shrink-0" />

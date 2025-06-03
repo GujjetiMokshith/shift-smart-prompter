@@ -6,30 +6,81 @@ import Sidebar from '@/components/workspace/Sidebar';
 import WelcomeScreen from '@/components/workspace/WelcomeScreen';
 import { Toaster } from 'sonner';
 
+interface Chat {
+  id: string;
+  title: string;
+  timestamp: Date;
+  messages: Array<{
+    id: string;
+    type: 'user' | 'assistant';
+    content: string;
+    timestamp: Date;
+  }>;
+}
+
 const Workspace = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [hasMessages, setHasMessages] = useState(false);
-  const [inputValue, setInputValue] = useState('');
-  const [chatHistory, setChatHistory] = useState<Array<{id: string, title: string, timestamp: Date}>>([]);
+  const [activeChat, setActiveChat] = useState<Chat | null>(null);
+  const [chatHistory, setChatHistory] = useState<Chat[]>([]);
 
   const handleNewChat = () => {
-    setHasMessages(false);
-    setInputValue('');
+    const newChat: Chat = {
+      id: Date.now().toString(),
+      title: 'New Chat',
+      timestamp: new Date(),
+      messages: []
+    };
     
-    // Add current chat to history if it has content
-    if (hasMessages) {
-      const newChat = {
-        id: Date.now().toString(),
-        title: inputValue.slice(0, 50) + (inputValue.length > 50 ? '...' : ''),
-        timestamp: new Date()
-      };
-      setChatHistory(prev => [newChat, ...prev]);
+    setChatHistory(prev => [newChat, ...prev]);
+    setActiveChat(newChat);
+  };
+
+  const handleSelectChat = (chatId: string) => {
+    const chat = chatHistory.find(c => c.id === chatId);
+    if (chat) {
+      setActiveChat(chat);
     }
   };
 
-  const handleExampleClick = (example: string) => {
-    setInputValue(example);
-    setHasMessages(true);
+  const handleUpdateChatTitle = (chatId: string, newTitle: string) => {
+    setChatHistory(prev => 
+      prev.map(chat => 
+        chat.id === chatId 
+          ? { ...chat, title: newTitle }
+          : chat
+      )
+    );
+    
+    if (activeChat?.id === chatId) {
+      setActiveChat(prev => prev ? { ...prev, title: newTitle } : null);
+    }
+  };
+
+  const handleAddMessage = (message: { type: 'user' | 'assistant'; content: string }) => {
+    if (!activeChat) return;
+
+    const newMessage = {
+      id: Date.now().toString(),
+      type: message.type,
+      content: message.content,
+      timestamp: new Date()
+    };
+
+    const updatedChat = {
+      ...activeChat,
+      messages: [...activeChat.messages, newMessage],
+      title: activeChat.title === 'New Chat' && message.type === 'user' 
+        ? message.content.slice(0, 30) + (message.content.length > 30 ? '...' : '')
+        : activeChat.title
+    };
+
+    setChatHistory(prev => 
+      prev.map(chat => 
+        chat.id === activeChat.id ? updatedChat : chat
+      )
+    );
+    
+    setActiveChat(updatedChat);
   };
 
   const handleToggleSidebar = () => {
@@ -42,6 +93,8 @@ const Workspace = () => {
         isCollapsed={sidebarCollapsed} 
         onNewChat={handleNewChat}
         chatHistory={chatHistory}
+        activeChat={activeChat}
+        onSelectChat={handleSelectChat}
       />
       
       <div className="flex-1 flex flex-col">
@@ -51,13 +104,14 @@ const Workspace = () => {
         />
         
         <main className="flex-1 flex">
-          {!hasMessages ? (
-            <WelcomeScreen onExampleClick={handleExampleClick} />
+          {!activeChat ? (
+            <WelcomeScreen onExampleClick={handleNewChat} />
           ) : (
             <div className="flex-1">
               <ChatContainer 
-                initialInput={inputValue}
-                onMessageSent={() => setHasMessages(true)}
+                chat={activeChat}
+                onAddMessage={handleAddMessage}
+                onUpdateTitle={handleUpdateChatTitle}
               />
             </div>
           )}
