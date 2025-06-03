@@ -12,7 +12,6 @@ export class AIService {
   private groq: Groq;
   private retryAttempts = 3;
   private retryDelay = 1000;
-  private fallbackModels = ['llama-3.3-70b-versatile', 'llama3-70b-8192']; // Fallback models
 
   constructor() {
     if (!import.meta.env.VITE_GROQ_API_KEY) {
@@ -21,19 +20,8 @@ export class AIService {
 
     this.groq = new Groq({
       apiKey: import.meta.env.VITE_GROQ_API_KEY,
-      dangerouslyAllowBrowser: true,
+      dangerouslyAllowBrowser: true
     });
-  }
-
-  // Helper to fetch available models dynamically
-  private async getAvailableModels(): Promise<string[]> {
-    try {
-      const response = await this.groq.models.list();
-      return response.data.map((model: any) => model.id);
-    } catch (error) {
-      console.error('Error fetching available models:', error);
-      return this.fallbackModels; // Return fallback models on error
-    }
   }
 
   public async enhancePrompt(
@@ -43,30 +31,22 @@ export class AIService {
   ): Promise<string> {
     const startTime = Date.now();
     let lastError: Error | null = null;
-    let currentModel = 'llama-3.3-70b-versatile';
-    const availableModels = await this.getAvailableModels();
-
-    // Validate model
-    if (!availableModels.includes(currentModel)) {
-      console.warn(`Model ${currentModel} not available. Falling back to ${this.fallbackModels[0]}`);
-      currentModel = this.fallbackModels.find(model => availableModels.includes(model)) || this.fallbackModels[0];
-    }
 
     const systemPrompt = options.customSystemPrompt || this.getSystemPrompt(targetService);
 
     for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
       try {
-        console.log(`Attempt ${attempt}: Enhancing prompt for ${targetService} with model ${currentModel}`);
+        console.log(`Attempt ${attempt}: Enhancing prompt for ${targetService}`);
 
         const completion = await this.groq.chat.completions.create({
           messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: prompt },
+            { role: "system", content: systemPrompt },
+            { role: "user", content: prompt }
           ],
-          model: currentModel,
+          model: "mixtral-8x7b-32768",
           temperature: options.temperature ?? 0.7,
           max_tokens: options.maxTokens ?? 4000,
-          stream: false,
+          stream: false
         });
 
         const result = completion.choices[0]?.message?.content;
@@ -78,8 +58,8 @@ export class AIService {
         analytics.trackPromptEnhancement({
           originalPrompt: prompt,
           enhancedPrompt: result,
-          modelUsed: currentModel,
-          enhancementTimeMs: Date.now() - startTime,
+          modelUsed: targetService,
+          enhancementTimeMs: Date.now() - startTime
         });
 
         return result;
@@ -87,34 +67,23 @@ export class AIService {
         lastError = error;
         console.error(`❌ Error enhancing prompt (Attempt ${attempt}):`, error);
 
-        // Handle model deprecation specifically
-        if (error.message.includes('model_decommissioned') && attempt === 1) {
-          console.warn(`Model ${currentModel} is decommissioned. Trying fallback model.`);
-          const nextModel = this.fallbackModels.find(model => model !== currentModel && availableModels.includes(model));
-          if (nextModel) {
-            currentModel = nextModel;
-            continue;
-          }
-        }
-
         if (attempt < this.retryAttempts) {
-          await new Promise(resolve => setTimeout(resolve, this.retryDelay * Math.pow(2, attempt - 1)));
+          await new Promise(resolve => 
+            setTimeout(resolve, this.retryDelay * Math.pow(2, attempt - 1))
+          );
           continue;
         }
       }
     }
 
     throw new Error(
-      `Failed to enhance prompt after ${this.retryAttempts} attempts. Last error: ${lastError?.message}. ` +
-      `Please check https://console.groq.com/docs/deprecations for supported models.`
+      `Failed to enhance prompt after ${this.retryAttempts} attempts. ` +
+      `Last error: ${lastError?.message}`
     );
   }
 
   private getSystemPrompt(targetService: string): string {
-    const validServices = ['openai', 'anthropic', 'general'];
-    const service = validServices.includes(targetService) ? targetService : 'general';
-
-    const basePrompt = `You are an expert prompt engineer specializing in transforming basic prompts into highly detailed, effective instructions optimized for ${service}.
+    const basePrompt = `You are an expert prompt engineer specializing in transforming basic prompts into highly detailed, effective instructions optimized for ${targetService}.
 
 Your task is to enhance and rewrite the user's prompt to be more specific, detailed, and effective. Focus on:
 
@@ -125,4 +94,19 @@ Your task is to enhance and rewrite the user's prompt to be more specific, detai
 5. Defining audience, purpose, and scope
 6. Adding relevant context and examples
 
-Make the prompt 3-5× more detailed while maintaining compatibility with ${service}'s capabilities and best practices.
+Make the prompt 3-5× more detailed while maintaining compatibility with ${targetService}'s capabilities and best practices.
+
+Return ONLY the enhanced prompt with no explanations or meta-commentary.`;
+
+    const serviceSpecificInstructions = {
+      openai: "Ensure the prompt follows OpenAI's best practices and includes clear stop sequences, temperature recommendations, and token count considerations.",
+      anthropic: "Format the prompt to work well with Anthropic's Constitutional AI principles, including clear ethical boundaries and specific task constraints.",
+      general: "Create a universally compatible prompt that works well across different AI services while maintaining clarity and effectiveness."
+    };
+
+    return `${basePrompt}\n\nAdditional Instructions:\n${serviceSpecificInstructions[targetService as keyof typeof serviceSpecificInstructions] || serviceSpecificInstructions.general}`;
+  }
+}
+
+// Export singleton instance
+export const aiService = new AIService();
