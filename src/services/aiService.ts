@@ -8,6 +8,8 @@ export interface AIModelConfig {
   maxTokens: number;
   temperature: number;
   isPrimary?: boolean;
+  platform: 'groq' | 'anthropic' | 'openai';
+  icon?: string;
 }
 
 export interface EnhancePromptOptions {
@@ -28,21 +30,32 @@ export class AIService {
       description: "Versatile model optimized for reasoning and understanding",
       maxTokens: 4000,
       temperature: 0.7,
-      isPrimary: true
+      isPrimary: true,
+      platform: 'groq'
     },
     {
       id: "mixtral-8x7b-32768",
       name: "Mixtral 8x7B",
       description: "High-performance model with extended context window",
       maxTokens: 4000,
-      temperature: 0.7
+      temperature: 0.7,
+      platform: 'groq'
     },
     {
-      id: "gemma2-9b-it",
-      name: "Gemma 2",
-      description: "Efficient model for instruction following and generation",
+      id: "claude-3-sonnet",
+      name: "Claude 3 Sonnet",
+      description: "Anthropic's latest model with enhanced capabilities",
       maxTokens: 4000,
-      temperature: 0.7
+      temperature: 0.7,
+      platform: 'anthropic'
+    },
+    {
+      id: "gpt-4-turbo",
+      name: "GPT-4 Turbo",
+      description: "OpenAI's most capable model",
+      maxTokens: 4000,
+      temperature: 0.7,
+      platform: 'openai'
     }
   ];
 
@@ -75,6 +88,10 @@ export class AIService {
       throw new Error(`Model ${modelId} not found`);
     }
 
+    if (!prompt.trim()) {
+      throw new Error('Prompt cannot be empty');
+    }
+
     const startTime = Date.now();
     let lastError: Error | null = null;
 
@@ -84,18 +101,36 @@ export class AIService {
       try {
         console.log(`Attempt ${attempt}: Enhancing prompt with ${model.name}`);
 
-        const completion = await this.groq.chat.completions.create({
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: prompt }
-          ],
-          model: model.id,
-          temperature: options.temperature ?? model.temperature,
-          max_tokens: options.maxTokens ?? model.maxTokens,
-          stream: false
-        });
+        let result: string;
 
-        const result = completion.choices[0]?.message?.content;
+        switch (model.platform) {
+          case 'groq':
+            const completion = await this.groq.chat.completions.create({
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: prompt }
+              ],
+              model: model.id,
+              temperature: options.temperature ?? model.temperature,
+              max_tokens: options.maxTokens ?? model.maxTokens,
+              stream: false
+            });
+
+            result = completion.choices[0]?.message?.content;
+            break;
+
+          case 'anthropic':
+            // Placeholder for Anthropic API integration
+            throw new Error('Anthropic integration coming soon');
+
+          case 'openai':
+            // Placeholder for OpenAI API integration
+            throw new Error('OpenAI integration coming soon');
+
+          default:
+            throw new Error(`Unsupported platform: ${model.platform}`);
+        }
+
         if (!result) {
           throw new Error('No content in response');
         }
@@ -109,6 +144,7 @@ export class AIService {
         });
 
         return result;
+
       } catch (error: any) {
         lastError = error;
         console.error(`❌ Error with ${model.name} (Attempt ${attempt}):`, error);
