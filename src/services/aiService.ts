@@ -46,13 +46,13 @@ export class AIService {
     }
   ];
 
-  constructor(apiKey?: string) {
-    if (!apiKey && !import.meta.env.VITE_GROQ_API_KEY) {
+  constructor() {
+    if (!import.meta.env.VITE_GROQ_API_KEY) {
       throw new Error('GROQ_API_KEY is required');
     }
 
     this.groq = new Groq({
-      apiKey: apiKey || import.meta.env.VITE_GROQ_API_KEY,
+      apiKey: import.meta.env.VITE_GROQ_API_KEY,
       dangerouslyAllowBrowser: true
     });
   }
@@ -112,10 +112,6 @@ export class AIService {
       } catch (error: any) {
         lastError = error;
         console.error(`❌ Error with ${model.name} (Attempt ${attempt}):`, error);
-
-        if (error.message?.includes('API key')) {
-          throw new Error('Invalid API key configuration');
-        }
 
         if (attempt < this.retryAttempts) {
           await new Promise(resolve => 

@@ -31,6 +31,11 @@ export const useChatOperations = ({ chat, onAddMessage, onUpdateTitle }: UseChat
     isCustomPrompt: boolean, 
     customSystemPrompt: string
   ) => {
+    if (!inputText.trim()) {
+      toast.error("Please enter a prompt to enhance");
+      return;
+    }
+
     onAddMessage({
       type: "user",
       content: inputText
