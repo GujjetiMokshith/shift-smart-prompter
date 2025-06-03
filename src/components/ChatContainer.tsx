@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import ChatMessage, { Message, MessageType } from "./ChatMessage";
 import ChatInput from "./ChatInput";
@@ -106,8 +105,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         </h2>
         <div className="flex items-center gap-3">
           <ModelSelector 
-            selectedModel={selectedModel}
-            onSelectModel={setSelectedModel}
+            selectedService={selectedModel}
+            onSelectService={setSelectedModel}
           />
         </div>
       </div>
