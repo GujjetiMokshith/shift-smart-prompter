@@ -8,6 +8,17 @@ export interface EnhancePromptOptions {
   targetService?: string;
 }
 
+export class AIServiceError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+    public readonly details?: any
+  ) {
+    super(message);
+    this.name = 'AIServiceError';
+  }
+}
+
 export class AIService {
   private groq: Groq;
   private retryAttempts = 3;
@@ -15,7 +26,10 @@ export class AIService {
 
   constructor() {
     if (!import.meta.env.VITE_GROQ_API_KEY) {
-      throw new Error('GROQ_API_KEY is required');
+      throw new AIServiceError(
+        'GROQ API key is missing from environment variables',
+        'CONFIG_ERROR'
+      );
     }
 
     this.groq = new Groq({
@@ -29,8 +43,16 @@ export class AIService {
     targetService: string,
     options: EnhancePromptOptions = {}
   ): Promise<string> {
+    if (!prompt?.trim()) {
+      throw new AIServiceError(
+        'Prompt cannot be empty',
+        'INVALID_INPUT'
+      );
+    }
+
     const startTime = Date.now();
     let lastError: Error | null = null;
+    let attemptDelay = this.retryDelay;
 
     const systemPrompt = options.customSystemPrompt || this.getSystemPrompt(targetService);
 
@@ -43,15 +65,48 @@ export class AIService {
             { role: "system", content: systemPrompt },
             { role: "user", content: prompt }
           ],
-          model: "mixtral-8x7b-32768",
+          model: "llama-3.3-70b-versatile",
           temperature: options.temperature ?? 0.7,
           max_tokens: options.maxTokens ?? 4000,
           stream: false
+        }).catch(error => {
+          // Handle specific API errors
+          if (error.response?.status === 401) {
+            throw new AIServiceError(
+              'Invalid API key or authentication failed',
+              'AUTH_ERROR'
+            );
+          }
+          if (error.response?.status === 429) {
+            throw new AIServiceError(
+              'Rate limit exceeded. Please try again later',
+              'RATE_LIMIT'
+            );
+          }
+          if (error.response?.status >= 500) {
+            throw new AIServiceError(
+              'AI service is temporarily unavailable',
+              'SERVICE_ERROR'
+            );
+          }
+          throw error;
         });
 
         const result = completion.choices[0]?.message?.content;
         if (!result) {
-          throw new Error('No content in response');
+          throw new AIServiceError(
+            'AI service returned empty response',
+            'EMPTY_RESPONSE'
+          );
+        }
+
+        // Validate response length
+        if (result.length < prompt.length) {
+          throw new AIServiceError(
+            'Enhanced prompt is shorter than original',
+            'INVALID_RESPONSE',
+            { originalLength: prompt.length, enhancedLength: result.length }
+          );
         }
 
         // Track analytics
@@ -65,21 +120,71 @@ export class AIService {
         return result;
       } catch (error: any) {
         lastError = error;
-        console.error(`❌ Error enhancing prompt (Attempt ${attempt}):`, error);
+        console.error(`❌ Error enhancing prompt (Attempt ${attempt}):`, {
+          error,
+          prompt,
+          targetService
+        });
+
+        // Don't retry on certain errors
+        if (error instanceof AIServiceError && 
+            ['AUTH_ERROR', 'INVALID_INPUT'].includes(error.code)) {
+          throw error;
+        }
 
         if (attempt < this.retryAttempts) {
+          // Exponential backoff with jitter
+          const jitter = Math.random() * 200;
           await new Promise(resolve => 
-            setTimeout(resolve, this.retryDelay * Math.pow(2, attempt - 1))
+            setTimeout(resolve, attemptDelay + jitter)
           );
+          attemptDelay *= 2; // Double the delay for next attempt
           continue;
         }
       }
     }
 
-    throw new Error(
-      `Failed to enhance prompt after ${this.retryAttempts} attempts. ` +
-      `Last error: ${lastError?.message}`
+    // If we've exhausted all retries, throw a detailed error
+    const finalError = new AIServiceError(
+      this.getFriendlyErrorMessage(lastError),
+      'ENHANCEMENT_FAILED',
+      {
+        originalError: lastError,
+        attempts: this.retryAttempts,
+        prompt: prompt.slice(0, 100) + '...' // Include truncated prompt for context
+      }
     );
+
+    throw finalError;
+  }
+
+  private getFriendlyErrorMessage(error: Error | null): string {
+    if (error instanceof AIServiceError) {
+      switch (error.code) {
+        case 'AUTH_ERROR':
+          return 'Failed to authenticate with the AI service. Please check your API key.';
+        case 'RATE_LIMIT':
+          return 'Too many requests. Please wait a moment and try again.';
+        case 'SERVICE_ERROR':
+          return 'The AI service is temporarily unavailable. Please try again later.';
+        case 'INVALID_INPUT':
+          return 'Please provide a valid prompt to enhance.';
+        case 'EMPTY_RESPONSE':
+          return 'The AI service failed to generate an enhanced prompt. Please try again.';
+        case 'INVALID_RESPONSE':
+          return 'The enhanced prompt did not meet quality standards. Please try again.';
+      }
+    }
+
+    if (error?.message?.includes('network')) {
+      return 'Network error. Please check your internet connection and try again.';
+    }
+
+    if (error?.message?.includes('timeout')) {
+      return 'The request timed out. Please try again.';
+    }
+
+    return 'An unexpected error occurred while enhancing your prompt. Please try again.';
   }
 
   private getSystemPrompt(targetService: string): string {
