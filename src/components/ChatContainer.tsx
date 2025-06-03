@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import ChatMessage, { Message, MessageType } from "./ChatMessage";
 import ChatInput from "./ChatInput";
@@ -35,7 +34,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   onAddMessage,
   onUpdateTitle
 }) => {
-  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
+  const [selectedService, setSelectedService] = useState("openai");
   const [showModelSelection, setShowModelSelection] = useState(false);
   const [inputText, setInputText] = useState("");
   const [isCustomPrompt, setIsCustomPrompt] = useState(false);
@@ -70,20 +69,20 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     setShowModelSelection(true);
   };
   
-  const proceedWithModel = async (modelId: string) => {
-    setSelectedModel(modelId);
+  const proceedWithService = async (serviceId: string) => {
+    setSelectedService(serviceId);
     setShowModelSelection(false);
     
-    await enhancePrompt(inputText, modelId, isCustomPrompt, customSystemPrompt);
+    await enhancePrompt(inputText, serviceId, isCustomPrompt, customSystemPrompt);
     setInputText("");
   };
 
   const handleExpand = async () => {
-    await expandPrompt(selectedModel);
+    await expandPrompt(selectedService);
   };
 
   const handleCondense = async () => {
-    await condensePrompt(selectedModel);
+    await condensePrompt(selectedService);
   };
 
   const handleInputChange = (text: string) => {
@@ -106,8 +105,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         </h2>
         <div className="flex items-center gap-3">
           <ModelSelector 
-            selectedModel={selectedModel}
-            onSelectModel={setSelectedModel}
+            selectedService={selectedService}
+            onSelectService={setSelectedService}
           />
         </div>
       </div>
@@ -145,8 +144,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       <ModelSelectionModal 
         isOpen={showModelSelection} 
         onClose={() => setShowModelSelection(false)}
-        onSelectModel={proceedWithModel}
-        currentModel={selectedModel}
+        onSelectService={proceedWithService}
+        currentService={selectedService}
       />
       
       <SettingsModal
