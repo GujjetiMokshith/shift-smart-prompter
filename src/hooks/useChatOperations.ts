@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { aiService } from '@/services/aiService';
+import { aiService } from '@/services/simpleAiService';
 import { PromptService } from '@/services/promptService';
 
 interface Chat {
@@ -91,8 +91,9 @@ export const useChatOperations = ({ chat, onAddMessage, onUpdateTitle }: UseChat
     setLoading(true);
     try {
       const expandedPrompt = await aiService.enhancePrompt(
-        `Expand this prompt to be even more detailed and comprehensive: ${currentEnhancedPrompt}`,
-        selectedModel
+        currentEnhancedPrompt,
+        selectedModel,
+        { operation: 'expand' }
       );
       
       onAddMessage({
@@ -115,8 +116,9 @@ export const useChatOperations = ({ chat, onAddMessage, onUpdateTitle }: UseChat
     setLoading(true);
     try {
       const condensedPrompt = await aiService.enhancePrompt(
-        `Make this prompt more concise while keeping all essential details: ${currentEnhancedPrompt}`,
-        selectedModel
+        currentEnhancedPrompt,
+        selectedModel,
+        { operation: 'condense' }
       );
       
       onAddMessage({

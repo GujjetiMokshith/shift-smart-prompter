@@ -37,10 +37,8 @@ export class PromptService {
         enhancementTimeMs: Date.now() - startTime
       });
 
-      // Increment user's prompt count if logged in
-      if (user) {
-        await supabase.rpc('increment_user_prompts', { user_id: user.id });
-      }
+      // Note: User prompt counting can be added later if needed
+      console.log('Prompt saved successfully for user:', user?.id || 'anonymous');
     } catch (error) {
       console.error('Error saving prompt:', error);
       throw error;
