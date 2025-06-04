@@ -11,7 +11,7 @@ import About from "./pages/About";
 import Documentation from "./pages/Documentation";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
-import Admin from "./pages/Admin";
+
 
 const queryClient = new QueryClient();
 
@@ -28,7 +28,7 @@ const App = () => (
           <Route path="/docs" element={<Documentation />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
-          <Route path="/admin" element={<Admin />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

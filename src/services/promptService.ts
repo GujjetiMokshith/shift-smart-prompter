@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import { analytics } from "./analytics";
 
 export interface SavePromptData {
@@ -12,24 +11,7 @@ export class PromptService {
     try {
       const startTime = Date.now();
       
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      // Save prompt
-      const { error } = await supabase
-        .from('enhanced_prompts')
-        .insert({
-          user_id: user?.id || null,
-          original_prompt: data.originalPrompt,
-          enhanced_prompt: data.enhancedPrompt,
-          model_used: data.modelUsed
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Track analytics
+      // Track analytics (local logging only)
       analytics.trackPromptEnhancement({
         originalPrompt: data.originalPrompt,
         enhancedPrompt: data.enhancedPrompt,
@@ -37,11 +19,14 @@ export class PromptService {
         enhancementTimeMs: Date.now() - startTime
       });
 
-      // Note: User prompt counting can be added later if needed
-      console.log('Prompt saved successfully for user:', user?.id || 'anonymous');
+      console.log('Prompt tracked locally:', {
+        originalLength: data.originalPrompt.length,
+        enhancedLength: data.enhancedPrompt.length,
+        modelUsed: data.modelUsed
+      });
     } catch (error) {
-      console.error('Error saving prompt:', error);
-      throw error;
+      console.error('Error tracking prompt:', error);
+      // Don't throw error for analytics failures
     }
   }
 }
