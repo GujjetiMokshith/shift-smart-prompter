@@ -1,6 +1,5 @@
-
 import React from "react";
-import { Check, Copy, FileDown, MinusSquare, PlusSquare } from "lucide-react";
+import { Check, Copy, FileDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
@@ -24,7 +23,6 @@ interface ChatMessageProps {
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, className }) => {
   const [copied, setCopied] = React.useState(false);
-  const [expanded, setExpanded] = React.useState(false);
   
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -34,15 +32,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, className }) => {
   };
 
   const isUser = message.type === "user";
-
-  // Add these functions for the buttons in the enhanced message
-  const handleExpandPrompt = () => {
-    // This would typically call an API to make the prompt more detailed
-    toast.info("Expanding prompt...");
-    // For now we'll just toggle the expanded state
-    setExpanded(!expanded);
-  };
-
 
   const handleDownload = () => {
     const element = document.createElement("a");
@@ -77,23 +66,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, className }) => {
           </div>
         )}
         
-        <div className={`text-sm whitespace-pre-wrap ${expanded ? "" : "max-h-[400px] overflow-y-auto prompt-chat-scrollbar"}`}>
+        <div className="text-sm whitespace-pre-wrap">
           {message.content}
         </div>
         
         {/* Action buttons for enhanced prompts */}
         {!isUser && message.isEnhanced && (
           <div className="flex flex-wrap gap-2 mt-3 pt-2 border-t border-white/5">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleExpandPrompt}
-              className="bg-blue-700/10 hover:bg-blue-700/20 text-blue-400 text-xs rounded-lg"
-            >
-              {expanded ? <MinusSquare className="h-3.5 w-3.5 mr-1" /> : <PlusSquare className="h-3.5 w-3.5 mr-1" />}
-              {expanded ? "Less Detailed" : "More Detailed"}
-            </Button>
-            
             <Button 
               variant="ghost" 
               size="sm" 
