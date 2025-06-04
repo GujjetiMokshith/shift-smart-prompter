@@ -4,11 +4,9 @@ import ChatInput from "./ChatInput";
 import { cn } from "@/lib/utils";
 import ModelSelector from "./ModelSelector";
 import ModelSelectionModal from "./ModelSelectionModal";
-import SettingsModal from "./SettingsModal";
 import ChatActionButtons from "./ChatActionButtons";
 import ChatLoadingIndicator from "./ChatLoadingIndicator";
 import { useChatOperations } from "@/hooks/useChatOperations";
-// AI service error handling is now handled within the service itself
 import { toast } from "sonner";
 
 interface Chat {
@@ -39,8 +37,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const [selectedService, setSelectedService] = useState("openai");
   const [showModelSelection, setShowModelSelection] = useState(false);
   const [inputText, setInputText] = useState("");
-  const [isCustomPrompt, setIsCustomPrompt] = useState(false);
-  const [customSystemPrompt, setCustomSystemPrompt] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -76,10 +72,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     setShowModelSelection(false);
     
     try {
-      await enhancePrompt(inputText, serviceId, isCustomPrompt, customSystemPrompt);
+      await enhancePrompt(inputText, serviceId);
       setInputText("");
     } catch (error: any) {
-      // Error handling is now handled within the simple AI service
       console.error("Enhancement error:", error);
       toast.error(error.message || "An unexpected error occurred. Please try again.");
     }
@@ -103,14 +98,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
   const handleInputChange = (text: string) => {
     setInputText(text);
-  };
-
-  const toggleCustomPrompt = (value: boolean) => {
-    setIsCustomPrompt(value);
-  };
-
-  const updateCustomPrompt = (prompt: string) => {
-    setCustomSystemPrompt(prompt);
   };
 
   return (
@@ -162,13 +149,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         onClose={() => setShowModelSelection(false)}
         onSelectService={proceedWithService}
         currentService={selectedService}
-      />
-      
-      <SettingsModal
-        isCustomPrompt={isCustomPrompt}
-        customPrompt={customSystemPrompt}
-        onToggleCustomPrompt={toggleCustomPrompt}
-        onUpdateCustomPrompt={updateCustomPrompt}
       />
     </div>
   );
