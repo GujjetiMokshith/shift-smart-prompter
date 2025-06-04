@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Check, Copy, FileDown, Maximize2, MinusSquare, PlusSquare } from "lucide-react";
+import { Check, Copy, FileDown, MinusSquare, PlusSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
@@ -43,10 +43,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, className }) => {
     setExpanded(!expanded);
   };
 
-  const handleCompressPrompt = () => {
-    toast.info("Compressing prompt...");
-    setExpanded(false);
-  };
 
   const handleDownload = () => {
     const element = document.createElement("a");
@@ -96,16 +92,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, className }) => {
             >
               {expanded ? <MinusSquare className="h-3.5 w-3.5 mr-1" /> : <PlusSquare className="h-3.5 w-3.5 mr-1" />}
               {expanded ? "Less Detailed" : "More Detailed"}
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleCompressPrompt}
-              className="bg-blue-700/10 hover:bg-blue-700/20 text-blue-400 text-xs rounded-lg"
-            >
-              <Maximize2 className="h-3.5 w-3.5 mr-1" />
-              Optimize
             </Button>
             
             <Button 
