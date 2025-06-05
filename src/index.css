@@ -142,6 +142,37 @@
   .button-glow:hover::after {
     @apply opacity-100;
   }
+
+  /* Gradient animations */
+  @keyframes gradient-x {
+    0%, 100% {
+      background-size: 200% 200%;
+      background-position: left center;
+    }
+    50% {
+      background-size: 200% 200%;
+      background-position: right center;
+    }
+  }
+
+  .animate-gradient-x {
+    animation: gradient-x 3s ease infinite;
+  }
+
+  /* Text animations */
+  .animate-in {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+
+  /* Footer animations */
+  .footer-animate .newsletter-section,
+  .footer-animate .brand-section,
+  .footer-animate .links-section,
+  .footer-animate .footer-bottom {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
 }
 
 @layer utilities {
