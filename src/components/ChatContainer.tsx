@@ -72,7 +72,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     setShowModelSelection(false);
     
     try {
-      await enhancePrompt(inputText, serviceId);
+      await enhancePrompt(inputText, serviceId, false, "");
       setInputText("");
     } catch (error: any) {
       console.error("Enhancement error:", error);

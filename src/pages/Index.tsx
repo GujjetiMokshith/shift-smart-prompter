@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Header from "@/components/Header";
+import WebGLBackground from "@/components/WebGLBackground";
 import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Zap, Check, Star, Rocket, Shield, Clock, Users, Brain, Target, TrendingUp, Cpu, Layers, Coffee } from "lucide-react";
@@ -108,7 +109,8 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#050A14] text-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-black via-[#001f54]/20 to-black text-white relative overflow-hidden">
+      <WebGLBackground />
       <Header />
       
       <main className="flex-1">
