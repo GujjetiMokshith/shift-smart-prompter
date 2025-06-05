@@ -1,6 +1,5 @@
 import React from "react";
 import Header from "@/components/Header";
-import WebGLBackground from "@/components/WebGLBackground";
 import { Toaster } from "sonner";
 import { useNavigate } from "react-router-dom";
 import HeroSection from "@/components/sections/HeroSection";
@@ -21,7 +20,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-black via-[#001f54]/20 to-black text-white relative overflow-hidden">
-      <WebGLBackground />
       <Header />
       
       <main className="flex-1">
