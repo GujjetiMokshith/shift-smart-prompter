@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Zap, Check, Star, Rocket, Shield, Clock, Users, Brain, Target, TrendingUp, Cpu, Layers, Coffee } from "lucide-react";
 import ChatInput from "@/components/ChatInput";
 import { Link, useNavigate } from "react-router-dom";
+import WebGLBackground from "@/components/WebGLBackground";
 
 const Index = () => {
   const navigate = useNavigate();
