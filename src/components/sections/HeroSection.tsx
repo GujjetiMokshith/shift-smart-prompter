@@ -18,11 +18,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onPromptSubmit }) => {
             <Sparkles className="h-8 w-8 text-blue-400" />
           </div>
           
-          <AnimatedText variant="gradient" className="text-6xl md:text-7xl font-bold mb-6">
-            Unlock the True Power
-            <br />
-            <span className="text-4xl md:text-5xl">of Your Prompts</span>
-          </AnimatedText>
+          <div className="space-y-4">
+            <AnimatedText variant="gradient" className="text-7xl md:text-8xl font-black tracking-tight leading-none">
+              Unlock the True Power
+            </AnimatedText>
+            <AnimatedText delay={200} variant="gradient" className="text-5xl md:text-6xl font-bold text-blue-400/90">
+              of Your Prompts
+            </AnimatedText>
+            <div className="h-1 w-32 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full animate-pulse"></div>
+          </div>
           
           <AnimatedText delay={300} className="text-xl md:text-2xl text-white/70 max-w-4xl mx-auto leading-relaxed">
             Boost response quality, accelerate workflows, and elevate AI outcomes effortlessly. 
