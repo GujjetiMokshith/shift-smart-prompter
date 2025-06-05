@@ -56,12 +56,9 @@
     @apply bg-blue-800 rounded-full;
   }
 
-  /* Enhanced Glassmorphism */
+  /* Glassmorphism */
   .glass {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    @apply bg-white/5 backdrop-blur-lg border border-white/5 rounded-xl;
   }
 
   .neo-blur {
@@ -90,13 +87,9 @@
     @apply shadow-[0_0_15px_rgba(30,58,138,0.4)];
   }
   
-  .glow-amber-sm {
-    @apply shadow-[0_0_15px_rgba(245,158,11,0.4)];
-  }
-  
   /* Enhanced hover effects */
   .hover-scale {
-    @apply transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(30,58,138,0.3)] hover:-translate-y-1;
+    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(30,58,138,0.2)];
   }
   
   .hover-glow {
@@ -122,7 +115,7 @@
 
   /* Text gradients */
   .text-gradient-blue {
-    @apply bg-gradient-to-r from-[#001f54] to-blue-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent;
   }
 
   /* Enhanced modal backdrop */
@@ -141,37 +134,6 @@
 
   .button-glow:hover::after {
     @apply opacity-100;
-  }
-
-  /* Gradient animations */
-  @keyframes gradient-x {
-    0%, 100% {
-      background-size: 200% 200%;
-      background-position: left center;
-    }
-    50% {
-      background-size: 200% 200%;
-      background-position: right center;
-    }
-  }
-
-  .animate-gradient-x {
-    animation: gradient-x 3s ease infinite;
-  }
-
-  /* Text animations */
-  .animate-in {
-    opacity: 1 !important;
-    transform: translateY(0) !important;
-  }
-
-  /* Footer animations */
-  .footer-animate .newsletter-section,
-  .footer-animate .brand-section,
-  .footer-animate .links-section,
-  .footer-animate .footer-bottom {
-    opacity: 1 !important;
-    transform: translateY(0) !important;
   }
 }
 
