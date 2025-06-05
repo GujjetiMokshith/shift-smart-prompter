@@ -1,3 +1,4 @@
+
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Zap, Menu } from "lucide-react";
@@ -18,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header 
       className={cn(
-        "w-full py-4 px-6 flex items-center justify-between border-b border-[#001f54]/10 bg-black/90 backdrop-blur-md z-10 sticky top-0", 
+        "w-full py-4 px-6 flex items-center justify-between border-b border-white/5 bg-[#050A14]/90 backdrop-blur-md z-10", 
         className
       )} 
       {...props}
@@ -29,7 +30,7 @@ const Header: React.FC<HeaderProps> = ({
             variant="ghost"
             size="sm"
             onClick={onToggleSidebar}
-            className="mr-4 text-white/70 hover:text-white hover:bg-[#001f54]/10"
+            className="mr-4 text-white/70 hover:text-white hover:bg-white/10"
           >
             <Menu className="h-4 w-4" />
           </Button>
@@ -37,40 +38,28 @@ const Header: React.FC<HeaderProps> = ({
         
         <Link to="/" className="flex items-center group hover-scale">
           <div className="flex items-center">
-            <Zap className="h-6 w-6 text-[#001f54] mr-3 group-hover:text-[#001f54]/80 transition-colors" />
-            <h1 className="text-2xl font-bold text-white group-hover:text-[#001f54] transition-colors">
+            <Zap className="h-6 w-6 text-blue-500 mr-3 group-hover:text-blue-400 transition-colors" />
+            <h1 className="text-2xl font-bold text-white group-hover:text-gradient-blue transition-colors">
               PromptShift
             </h1>
           </div>
-          <span className="ml-3 bg-[#001f54]/20 text-[#001f54] text-xs px-2 py-1 rounded-full glow-blue-sm">
+          <span className="ml-3 bg-blue-800/20 text-blue-400 text-xs px-2 py-1 rounded-full glow-blue-sm">
             beta
           </span>
         </Link>
       </div>
       
-      <nav className="hidden md:flex items-center gap-6">
-        <Link 
-          to="/docs" 
-          className="text-white/70 hover:text-white transition-colors"
-        >
-          Documentation
-        </Link>
-        <Link 
-          to="/about" 
-          className="text-white/70 hover:text-white transition-colors"
-        >
-          About
-        </Link>
+      <div className="flex items-center gap-4">
         <Button 
           size="sm" 
-          className="bg-[#001f54] hover:bg-[#001f54]/80 text-white hover-glow rounded-lg"
+          className="bg-blue-800 hover:bg-blue-700 text-white hover-glow rounded-lg"
           asChild
         >
           <Link to="/workspace">
             Get Started
           </Link>
         </Button>
-      </nav>
+      </div>
     </header>
   );
 };
