@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Zap, Check, Star, Rocket, Shield, Clock, Users, Brain, Target, TrendingUp, Cpu, Layers, Coffee } from "lucide-react";
 import ChatInput from "@/components/ChatInput";
 import { Link, useNavigate } from "react-router-dom";
-import { Features } from "@/components/ui/features-10";
+
 
 const Index = () => {
   const navigate = useNavigate();
@@ -180,7 +180,33 @@ const Index = () => {
         </section>
 
         {/* How It Works Section */}
-        <Features />
+        <section className="py-24 px-4 bg-[#030712]/50">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gradient-blue">How It Works</h2>
+              <p className="text-xl text-white/70 max-w-3xl mx-auto">
+                Transform your prompts in three simple steps with our AI-powered enhancement engine
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              {processSteps.map((step, index) => (
+                <div 
+                  key={step.step}
+                  className="bolt-card p-8 hover-border-glow hover-scale transition-all duration-300 group text-center"
+                  style={{animationDelay: `${index * 0.1}s`}}
+                >
+                  <div className="w-16 h-16 bg-blue-800/20 rounded-full flex items-center justify-center mb-6 mx-auto glow-blue-sm group-hover:scale-110 transition-transform">
+                    <step.icon className="h-8 w-8 text-blue-400" />
+                  </div>
+                  <div className="text-3xl font-bold text-blue-400 mb-3">{step.step}</div>
+                  <h3 className="text-xl font-semibold text-white mb-4">{step.title}</h3>
+                  <p className="text-white/70 leading-relaxed">{step.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* Features Section */}
         <section className="py-24 px-4 bg-[#030712]/50">
