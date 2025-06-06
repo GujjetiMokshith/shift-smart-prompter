@@ -19,11 +19,6 @@ export class PromptService {
         enhancementTimeMs: Date.now() - startTime
       });
 
-      console.log('Prompt tracked locally:', {
-        originalLength: data.originalPrompt.length,
-        enhancedLength: data.enhancedPrompt.length,
-        modelUsed: data.modelUsed
-      });
     } catch (error) {
       console.error('Error tracking prompt:', error);
       // Don't throw error for analytics failures

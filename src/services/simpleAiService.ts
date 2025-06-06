@@ -37,9 +37,9 @@ export class SimpleAiService {
       });
       
       this.isInitialized = true;
-      console.log('✅ AI Service initialized successfully');
+      
     } catch (error) {
-      console.error('❌ Failed to initialize AI service:', error);
+      
       this.isInitialized = false;
     }
   }
@@ -59,7 +59,7 @@ export class SimpleAiService {
     // Try each model until one works
     for (const model of this.fallbackModels) {
       try {
-        console.log(`🤖 Trying model: ${model}`);
+        
         
         const completion = await this.makeRequest(model, systemPrompt, prompt);
         const result = completion.choices[0]?.message?.content;
@@ -77,7 +77,7 @@ export class SimpleAiService {
           enhancementTimeMs: Date.now() - startTime
         });
 
-        console.log(`✅ Success with model: ${model}`);
+        
         return result;
         
       } catch (error: any) {

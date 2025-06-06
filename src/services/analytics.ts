@@ -12,14 +12,7 @@ class Analytics {
   }
 
   async trackEvent(eventType: string, metadata?: Record<string, any>) {
-    // Console logging for development - no external analytics service
-    console.log('Analytics Event:', {
-      eventType,
-      metadata,
-      userId: this.userId,
-      timestamp: new Date().toISOString(),
-      page: window.location.href
-    });
+    // Analytics tracking disabled in production
   }
 
   async trackSignup(source: string = 'direct') {

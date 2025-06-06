@@ -44,7 +44,7 @@ export const useChatOperations = ({ chat, onAddMessage, onUpdateTitle }: UseChat
     setLoading(true);
     
     try {
-      console.log('Starting prompt enhancement with model:', selectedModel);
+      
       const enhancedPrompt = await aiService.enhancePrompt(
         inputText, 
         selectedModel, 
