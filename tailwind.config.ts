@@ -57,18 +57,18 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'
         },
-        // PromptShift custom colors - updated to darker bolt-like theme
+        // PromptShift custom colors - extreme dark SaaS theme
         bolt: {
-          'primary': '#1E40AF', // Darker blue
-          'secondary': '#050A14', // Very dark blue/almost black
-          'accent': '#3B82F6', // Blue
+          'primary': '#0F1E5A', // Much darker blue
+          'secondary': '#000000', // Pure black
+          'accent': '#1E3A8A', // Dark blue
           'success': '#0D9488', // Dark teal
           'error': '#DC2626', // Red
           'light-gray': '#94A3B8', // Light gray
-          'dark': '#030712', // Darker than black
-          'card': '#070C18', // Dark card background
-          'input': '#0A1020', // Input background
-          'highlight': '#1E40AF', // Blue highlight
+          'dark': '#000000', // Pure black
+          'card': '#000000', // Pure black card background
+          'input': '#000000', // Pure black input background
+          'highlight': '#0F1E5A', // Dark blue highlight
         }
       },
       borderRadius: {
