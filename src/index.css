@@ -1,25 +1,26 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
+    --background: 220 100% 4%;
     --foreground: 0 0% 100%;
 
-    --card: 0 0% 2%;
+    --card: 220 100% 3%;
     --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 2%;
+    --popover: 220 100% 3%;
     --popover-foreground: 0 0% 100%;
 
     --primary: 220 100% 25%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 4%;
+    --secondary: 220 100% 2%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 5%;
+    --muted: 220 100% 5%;
     --muted-foreground: 215 20.2% 65.1%;
 
     --accent: 220 100% 25%;
@@ -28,8 +29,8 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 8%;
-    --input: 0 0% 8%;
+    --border: 220 100% 8%;
+    --input: 220 100% 6%;
     --ring: 220 100% 25%;
 
     --radius: 0.5rem;
@@ -40,7 +41,7 @@
   }
 
   body {
-    @apply bg-black text-white antialiased;
+    @apply bg-gradient-to-br from-slate-900 via-blue-950 to-black text-white antialiased;
   }
 
   /* Custom scrollbar for the chat area */
@@ -49,33 +50,33 @@
   }
 
   .prompt-chat-scrollbar::-webkit-scrollbar-track {
-    @apply bg-black/20;
+    @apply bg-gradient-to-b from-blue-950/20 to-black/20;
   }
 
   .prompt-chat-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-blue-900 rounded-full;
+    @apply bg-gradient-to-b from-blue-900 to-blue-950 rounded-full;
   }
 
   /* Glassmorphism */
   .glass {
-    @apply bg-white/5 backdrop-blur-lg border border-white/5 rounded-xl;
+    @apply bg-gradient-to-br from-blue-950/30 via-slate-900/20 to-black/40 backdrop-blur-lg border border-white/5 rounded-xl;
   }
 
   .neo-blur {
-    @apply backdrop-blur-xl bg-black/80 border border-white/5 rounded-xl;
+    @apply backdrop-blur-xl bg-gradient-to-br from-blue-950/80 via-slate-900/60 to-black/90 border border-white/5 rounded-xl;
   }
   
-  /* Bolt-inspired classes with darker theme */
+  /* Bolt-inspired classes with gradient theme */
   .bolt-card {
-    @apply bg-black/90 backdrop-blur-xl border border-white/5 rounded-xl shadow-lg;
+    @apply bg-gradient-to-br from-blue-950/90 via-slate-900/80 to-black/95 backdrop-blur-xl border border-white/5 rounded-xl shadow-lg;
   }
   
   .bolt-gradient {
-    @apply bg-gradient-to-br from-blue-950 to-blue-900;
+    @apply bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900;
   }
   
   .bolt-input {
-    @apply bg-black border border-white/5 rounded-xl text-white placeholder-white/30;
+    @apply bg-gradient-to-br from-blue-950/50 via-slate-900/40 to-black/60 border border-white/5 rounded-xl text-white placeholder-white/30;
   }
   
   /* Enhanced glow effects */
@@ -106,7 +107,7 @@
   }
   
   .loading-container {
-    @apply fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-xl z-50;
+    @apply fixed inset-0 flex items-center justify-center bg-gradient-to-br from-blue-950/60 via-slate-900/40 to-black/80 backdrop-blur-xl z-50;
   }
   
   .loading-spinner {
@@ -120,7 +121,7 @@
 
   /* Enhanced modal backdrop */
   .modal-backdrop {
-    @apply fixed inset-0 bg-black/80 backdrop-blur-xl z-40;
+    @apply fixed inset-0 bg-gradient-to-br from-blue-950/80 via-slate-900/60 to-black/90 backdrop-blur-xl z-40;
   }
 
   /* Enhanced button effects */

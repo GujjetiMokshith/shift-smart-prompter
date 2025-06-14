@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Plus, MessageSquare, Settings, HelpCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   if (isCollapsed) {
     return (
-      <div className="w-12 bg-[#0B1426] border-r border-white/10 flex flex-col items-center py-4 space-y-3">
+      <div className="w-12 bg-gradient-to-b from-blue-950 via-slate-900 to-black border-r border-white/10 flex flex-col items-center py-4 space-y-3">
         <Button
           variant="ghost"
           size="sm"
@@ -57,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   }
 
   return (
-    <div className="w-64 bg-[#0B1426] border-r border-white/10 flex flex-col">
+    <div className="w-64 bg-gradient-to-b from-blue-950 via-slate-900 to-black border-r border-white/10 flex flex-col">
       <div className="p-4">
         <Button
           onClick={onNewChat}

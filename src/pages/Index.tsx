@@ -109,7 +109,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#050A14] text-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-blue-950 to-black text-white">
       <Header />
       
       <main className="flex-1">
@@ -132,7 +132,7 @@ const Index = () => {
               </p>
             </div>
             
-            <div className="w-full max-w-4xl mx-auto bolt-card p-8 hover-border-glow transition-all duration-300 animate-fade-in" style={{animationDelay: '0.2s'}}>
+            <div className="w-full max-w-4xl mx-auto bg-gradient-to-br from-blue-950/90 via-slate-900/80 to-black/95 backdrop-blur-xl border border-white/5 rounded-xl shadow-lg p-8 hover-border-glow transition-all duration-300 animate-fade-in" style={{animationDelay: '0.2s'}}>
               <ChatInput
                 placeholder="Paste your prompt here to enhance it instantly with AI..."
                 onSubmit={handlePromptSubmit}
@@ -180,7 +180,7 @@ const Index = () => {
         </section>
 
         {/* How It Works Section */}
-        <section className="py-24 px-4 bg-[#030712]/50">
+        <section className="py-24 px-4 bg-gradient-to-br from-slate-950/50 via-blue-950/30 to-black/60">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gradient-blue">How It Works</h2>
@@ -193,7 +193,7 @@ const Index = () => {
               {processSteps.map((step, index) => (
                 <div 
                   key={step.step}
-                  className="bolt-card p-8 hover-border-glow hover-scale transition-all duration-300 group text-center"
+                  className="bg-gradient-to-br from-blue-950/90 via-slate-900/80 to-black/95 backdrop-blur-xl border border-white/5 rounded-xl shadow-lg p-8 hover-border-glow hover-scale transition-all duration-300 group text-center"
                   style={{animationDelay: `${index * 0.1}s`}}
                 >
                   <div className="w-16 h-16 bg-blue-800/20 rounded-full flex items-center justify-center mb-6 mx-auto glow-blue-sm group-hover:scale-110 transition-transform">
@@ -209,7 +209,7 @@ const Index = () => {
         </section>
 
         {/* Features Section */}
-        <section className="py-24 px-4 bg-[#030712]/50">
+        <section className="py-24 px-4 bg-gradient-to-br from-slate-950/50 via-blue-950/30 to-black/60">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gradient-blue">Why Choose PromptShift?</h2>
@@ -222,7 +222,7 @@ const Index = () => {
               {features.map((feature, index) => (
                 <div 
                   key={feature.title}
-                  className="bolt-card p-8 hover-border-glow hover-scale transition-all duration-300 group"
+                  className="bg-gradient-to-br from-blue-950/90 via-slate-900/80 to-black/95 backdrop-blur-xl border border-white/5 rounded-xl shadow-lg p-8 hover-border-glow hover-scale transition-all duration-300 group"
                   style={{animationDelay: `${index * 0.1}s`}}
                 >
                   <div className="w-14 h-14 bg-blue-800/20 rounded-xl flex items-center justify-center mb-6 glow-blue-sm group-hover:scale-110 transition-transform">
@@ -254,7 +254,7 @@ const Index = () => {
               {testimonials.map((testimonial, index) => (
                 <div 
                   key={index}
-                  className="bolt-card p-6 hover-border-glow transition-all duration-300"
+                  className="bg-gradient-to-br from-blue-950/90 via-slate-900/80 to-black/95 backdrop-blur-xl border border-white/5 rounded-xl shadow-lg p-6 hover-border-glow transition-all duration-300"
                 >
                   <div className="flex mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
@@ -281,9 +281,9 @@ const Index = () => {
         </section>
 
         {/* Support Section */}
-        <section className="py-24 px-4 bg-[#030712]/50">
+        <section className="py-24 px-4 bg-gradient-to-br from-slate-950/50 via-blue-950/30 to-black/60">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="bolt-card p-12 hover-border-glow">
+            <div className="bg-gradient-to-br from-blue-950/90 via-slate-900/80 to-black/95 backdrop-blur-xl border border-white/5 rounded-xl shadow-lg p-12 hover-border-glow">
               <div className="w-16 h-16 bg-amber-800/20 rounded-full flex items-center justify-center mb-6 mx-auto glow-amber-sm">
                 <Coffee className="h-8 w-8 text-amber-400" />
               </div>
@@ -324,7 +324,7 @@ const Index = () => {
         {/* CTA Section */}
         <section className="py-24 px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="bolt-card p-12 hover-border-glow">
+            <div className="bg-gradient-to-br from-blue-950/90 via-slate-900/80 to-black/95 backdrop-blur-xl border border-white/5 rounded-xl shadow-lg p-12 hover-border-glow">
               <h2 className="text-4xl font-bold mb-6 text-gradient-blue">
                 Ready to Transform Your AI Results?
               </h2>
@@ -359,7 +359,7 @@ const Index = () => {
       </main>
       
       {/* Enhanced Footer */}
-      <footer className="border-t border-white/5 py-16 px-4 bg-[#030712]/80">
+      <footer className="border-t border-white/5 py-16 px-4 bg-gradient-to-br from-slate-950/80 via-blue-950/60 to-black/90">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-5 gap-8 mb-12">
             <div className="md:col-span-2">

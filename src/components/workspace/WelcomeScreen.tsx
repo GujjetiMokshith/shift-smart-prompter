@@ -59,7 +59,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onExampleClick }) => {
           return (
             <Card 
               key={index}
-              className="bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-300 cursor-pointer group"
+              className="bg-gradient-to-br from-blue-950/50 via-slate-900/40 to-black/60 border-white/10 hover:bg-gradient-to-br hover:from-blue-950/70 hover:via-slate-900/60 hover:to-black/80 transition-all duration-300 cursor-pointer group"
               onClick={onExampleClick}
             >
               <CardHeader className="pb-3">

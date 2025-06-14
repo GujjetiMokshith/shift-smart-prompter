@@ -57,19 +57,25 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'
         },
-        // PromptShift custom colors - extreme dark SaaS theme
+        // PromptShift custom colors - blue-black gradient SaaS theme
         bolt: {
-          'primary': '#0F1E5A', // Much darker blue
-          'secondary': '#000000', // Pure black
-          'accent': '#1E3A8A', // Dark blue
-          'success': '#0D9488', // Dark teal
-          'error': '#DC2626', // Red
-          'light-gray': '#94A3B8', // Light gray
-          'dark': '#000000', // Pure black
-          'card': '#000000', // Pure black card background
-          'input': '#000000', // Pure black input background
-          'highlight': '#0F1E5A', // Dark blue highlight
+          'primary': '#1E40AF', // Blue-600
+          'secondary': '#0F172A', // Slate-900
+          'accent': '#1E3A8A', // Blue-800
+          'success': '#0D9488', // Teal-600
+          'error': '#DC2626', // Red-600
+          'light-gray': '#94A3B8', // Slate-400
+          'dark': '#020617', // Slate-950
+          'card': 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 50%, #000000 100%)', // Blue to black gradient
+          'input': 'linear-gradient(135deg, #1E40AF 0%, #0F172A 70%, #000000 100%)', // Blue to black gradient
+          'highlight': '#3B82F6', // Blue-500
         }
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        'blue-black': 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 50%, #000000 100%)',
+        'blue-slate': 'linear-gradient(135deg, #1E40AF 0%, #334155 50%, #0F172A 100%)',
       },
       borderRadius: {
         lg: 'var(--radius)',
