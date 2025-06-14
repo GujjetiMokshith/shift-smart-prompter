@@ -5,35 +5,35 @@
 
 @layer base {
   :root {
-    --background: 220 100% 4%;
+    --background: 220 100% 4%; /* Slightly lighter base for popovers/cards if needed */
     --foreground: 0 0% 100%;
 
-    --card: 220 100% 3%;
+    --card: 225 80% 6%; /* Darker, bluer card */
     --card-foreground: 0 0% 100%;
 
-    --popover: 220 100% 3%;
+    --popover: 225 80% 5%; /* Darker, bluer popover */
     --popover-foreground: 0 0% 100%;
 
-    --primary: 220 100% 25%;
+    --primary: 220 100% 50%; /* Brighter primary blue for accents */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 100% 2%;
+    --secondary: 220 100% 10%; /* Darker secondary */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 100% 5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 220 20% 15%; /* More neutral muted */
+    --muted-foreground: 215 20.2% 75.1%; /* Lighter muted foreground */
 
-    --accent: 220 100% 25%;
+    --accent: 220 100% 50%; /* Consistent with primary */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 40.6%; /* Slightly desaturated destructive */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 100% 8%;
-    --input: 220 100% 6%;
-    --ring: 220 100% 25%;
+    --border: 220 30% 15%; /* More subtle border */
+    --input: 220 40% 10%; /* Darker input */
+    --ring: 220 100% 50%; /* Consistent with primary */
 
-    --radius: 0.5rem;
+    --radius: 0.75rem; /* Slightly larger radius for a modern feel */
   }
 
   * {
@@ -41,64 +41,68 @@
   }
 
   body {
-    @apply bg-gradient-to-br from-slate-900 via-blue-950 to-black text-white antialiased;
+    @apply bg-gradient-to-br from-[#02040A] via-[#040A18] to-[#000000] text-white antialiased; /* Smoother, darker gradient */
   }
 
   /* Custom scrollbar for the chat area */
   .prompt-chat-scrollbar::-webkit-scrollbar {
-    width: 4px;
+    width: 6px; /* Slightly wider */
   }
 
   .prompt-chat-scrollbar::-webkit-scrollbar-track {
-    @apply bg-gradient-to-b from-blue-950/20 to-black/20;
+    @apply bg-gradient-to-b from-blue-950/10 to-black/10; /* More subtle track */
   }
 
   .prompt-chat-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-gradient-to-b from-blue-900 to-blue-950 rounded-full;
+    @apply bg-gradient-to-b from-blue-800 to-blue-900 rounded-full; /* Brighter thumb */
   }
 
-  /* Glassmorphism */
+  /* Glassmorphism - refined */
   .glass {
-    @apply bg-gradient-to-br from-blue-950/30 via-slate-900/20 to-black/40 backdrop-blur-lg border border-white/5 rounded-xl;
+    @apply bg-gradient-to-br from-blue-950/20 via-slate-900/10 to-black/30 backdrop-blur-md border border-white/5 rounded-xl; /* Softer blur, less opacity */
   }
 
   .neo-blur {
-    @apply backdrop-blur-xl bg-gradient-to-br from-blue-950/80 via-slate-900/60 to-black/90 border border-white/5 rounded-xl;
+    @apply backdrop-blur-lg bg-gradient-to-br from-blue-950/70 via-slate-900/50 to-black/80 border border-white/5 rounded-xl; /* Refined neo-blur */
   }
   
-  /* Bolt-inspired classes with gradient theme */
+  /* Bolt-inspired classes with gradient theme - refined */
   .bolt-card {
-    @apply bg-gradient-to-br from-blue-950/90 via-slate-900/80 to-black/95 backdrop-blur-xl border border-white/5 rounded-xl shadow-lg;
+    @apply bg-gradient-to-br from-[#0A1024] via-[#060B1A] to-[#02040A] backdrop-blur-lg border border-white/5 rounded-xl shadow-xl; /* Darker, more sophisticated card */
   }
   
   .bolt-gradient {
-    @apply bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900;
+    @apply bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900; /* Richer blue gradient */
   }
   
   .bolt-input {
-    @apply bg-gradient-to-br from-blue-950/50 via-slate-900/40 to-black/60 border border-white/5 rounded-xl text-white placeholder-white/30;
+    @apply bg-gradient-to-br from-blue-950/40 via-slate-900/30 to-black/50 border border-white/10 rounded-lg text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500; /* Improved input styling */
   }
   
-  /* Enhanced glow effects */
+  /* Enhanced glow effects - more subtle */
   .glow-blue {
-    @apply shadow-[0_0_25px_rgba(15,30,90,0.6)];
+    @apply shadow-[0_0_30px_rgba(59,130,246,0.3)]; /* Softer blue glow */
   }
   
   .glow-blue-sm {
-    @apply shadow-[0_0_15px_rgba(15,30,90,0.5)];
+    @apply shadow-[0_0_20px_rgba(59,130,246,0.25)]; /* Even softer small blue glow */
+  }
+
+  .glow-amber-sm {
+    @apply shadow-[0_0_20px_rgba(245,158,11,0.25)]; /* Softer amber glow */
   }
   
-  /* Enhanced hover effects */
+  /* Enhanced hover effects - smoother transitions */
   .hover-scale {
-    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(15,30,90,0.3)];
+    @apply transition-all duration-300 ease-out hover:scale-[1.03] hover:shadow-[0_0_35px_rgba(59,130,246,0.2)];
   }
   
   .hover-glow {
-    @apply transition-all duration-300 hover:shadow-[0_0_25px_rgba(15,30,90,0.5)] hover:border-blue-950/50;
+    @apply transition-all duration-300 ease-out hover:shadow-[0_0_30px_rgba(59,130,246,0.35)] hover:border-blue-700/50;
   }
   
   .hover-border-glow {
-    @apply transition-all duration-300 hover:border-blue-950/50 hover:shadow-[0_0_15px_rgba(15,30,90,0.4)];
+    @apply transition-all duration-300 ease-out hover:border-blue-700/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)];
   }
   
   /* Loading animation */
@@ -107,21 +111,21 @@
   }
   
   .loading-container {
-    @apply fixed inset-0 flex items-center justify-center bg-gradient-to-br from-blue-950/60 via-slate-900/40 to-black/80 backdrop-blur-xl z-50;
+    @apply fixed inset-0 flex items-center justify-center bg-gradient-to-br from-blue-950/50 via-slate-900/30 to-black/70 backdrop-blur-lg z-50;
   }
   
   .loading-spinner {
-    @apply h-14 w-14 animate-spin text-blue-900;
+    @apply h-16 w-16 animate-spin text-blue-500; /* Brighter spinner */
   }
 
   /* Text gradients */
   .text-gradient-blue {
-    @apply bg-gradient-to-r from-blue-800 to-blue-950 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent; /* More vibrant and readable gradient */
   }
 
   /* Enhanced modal backdrop */
   .modal-backdrop {
-    @apply fixed inset-0 bg-gradient-to-br from-blue-950/80 via-slate-900/60 to-black/90 backdrop-blur-xl z-40;
+    @apply fixed inset-0 bg-gradient-to-br from-blue-950/70 via-slate-900/50 to-black/80 backdrop-blur-lg z-40;
   }
 
   /* Enhanced button effects */
@@ -130,7 +134,7 @@
   }
 
   .button-glow::after {
-    @apply content-[''] absolute inset-0 bg-gradient-to-r from-blue-950/0 via-blue-900/20 to-blue-950/0 opacity-0 transition-opacity duration-300;
+    @apply content-[''] absolute inset-0 bg-gradient-to-r from-blue-700/0 via-blue-600/20 to-blue-700/0 opacity-0 transition-opacity duration-300;
   }
 
   .button-glow:hover::after {
